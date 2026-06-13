@@ -702,7 +702,14 @@ async function _preFetchGist(gistId) {
     });
     if (!r.ok) return null;
     const d = await r.json();
-    const txt = d.files && d.files["bb-progress.json"] && d.files["bb-progress.json"].content;
+    const fileObj = d.files && d.files["bb-progress.json"];
+    if (!fileObj) return null;
+    // Handle truncated content — fetch from raw_url
+    let txt = fileObj.content;
+    if (fileObj.truncated && fileObj.raw_url) {
+      const rr = await fetch(fileObj.raw_url);
+      if (rr.ok) txt = await rr.text();
+    }
     if (!txt) return null;
     const data = JSON.parse(txt);
     if (data.encToken) sessionStorage.setItem("bb_enc_from_gist", data.encToken);
@@ -879,11 +886,17 @@ function _bbSetSyncUI(status, msg) {
 /* — Page initializer (call on DOMContentLoaded) — */
 async function bbInitPage() {
   // 1. Share mode: no password, view-only
-  const shareId = new URLSearchParams(window.location.search).get("share");
-  if (shareId) {
+  const shareParam = new URLSearchParams(window.location.search).get("share");
+  if (shareParam) {
     _bbShareMode = true;
-    // Use unauthenticated fetch — viewer has no token, gist is public
-    const data = await _preFetchGist(shareId);
+    // shareParam may be gist ID or just "1" (view-only flag)
+    // Always load from BB_GIST_ID (hardcoded) — most reliable
+    const gistToLoad = (shareParam.length > 5) ? shareParam : BB_GIST_ID;
+    let data = await _preFetchGist(gistToLoad);
+    // Fallback: if provided shareId failed, try BB_GIST_ID
+    if (!data && gistToLoad !== BB_GIST_ID) {
+      data = await _preFetchGist(BB_GIST_ID);
+    }
     if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; }
     bbFixNavLinks();
     return { shareMode: true };
