@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ট্র্যাকিং — BusinessBrain AI Learning OS</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>BUSINESSBRAIN_AI · LEARNING_OS</div>
+    <div class="page-links">
+      <a href="index.html">হোম</a>
+      <a href="roadmap.html">রোডম্যাপ</a>
+      <a href="project.html">প্রজেক্ট</a>
+      <a href="tracking.html" class="active">ট্র্যাকিং</a>
+    </div>
+    <span id="bbSyncBadge" class="bb-sync-badge bb-sync-idle" style="font-size:11px;">○ GitHub</span>
+    <button class="reset-btn" onclick="resetAll()">RESET ROADMAP</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Progress Dashboard</p>
+    <h1>প্রোগ্রেস <span class="hl">ট্র্যাকিং</span> — ডিটেইলড ভিউ</h1>
+    <p class="hero-sub" style="margin-bottom:28px;">তোমার বর্তমান লেভেল, প্রতিটি ফেইজ ও মডিউলের অগ্রগতি, এবং পরবর্তী সেরা পদক্ষেপ — সব এক জায়গায়। এই ডেটা রোডম্যাপ ও প্রজেক্ট পেজের সাথে লাইভ সিঙ্ক করা।</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="v" id="levelOut">BEGINNER</div><div class="l">CURRENT_LEVEL</div></div>
+      <div class="stat-card"><div class="v" id="progressOut">0%</div><div class="l">TOTAL_PROGRESS</div></div>
+      <div class="stat-card"><div class="v" id="countOut">0 / 0</div><div class="l">CHECKED ITEMS</div></div>
+      <div class="stat-card"><div class="v" id="etaOut">36 মাস</div><div class="l">ESTIMATED_COMPLETION</div></div>
+      <div class="stat-card"><div class="v" id="moduleOut">0 / 6</div><div class="l">UNLOCKED MODULES</div></div>
+    </div>
+    <div class="progress-track" style="margin-top:22px;"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</header>
+
+<!-- ===================== NEXT STEP ===================== -->
+<section id="nextstep">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Rule 04 · Next Best Step</p>
+      <h2>পরবর্তী সেরা লার্নিং স্টেপ</h2>
+    </div>
+    <div class="build-box" id="nextStepBox" style="font-size:15px;">
+      <span class="label">NEXT</span>
+      হিসাব করা হচ্ছে...
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ROADMAP PROGRESS ===================== -->
+<section id="roadmap-progress">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Learning Roadmap</p>
+      <h2>ফেইজ-ভিত্তিক প্রোগ্রেস (১২টি ফেইজ — Phase 00 Git/GitHub থেকে Phase 11 MLOps)</h2>
+      <p class="section-desc">প্রতিটি ফেইজের নাম-এ ক্লিক করলে রোডম্যাপ পেজে সরাসরি সেই ফেইজে যাবে।</p>
+    </div>
+    <div class="track-card">
+      <div id="phaseRows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MODULE PROGRESS ===================== -->
+<section id="module-progress">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">BusinessBrain AI Project</p>
+      <h2>মডিউল-ভিত্তিক প্রোগ্রেস ও আনলক স্ট্যাটাস (৬টি মডিউল)</h2>
+      <p class="section-desc">মডিউলের নাম-এ ক্লিক করলে প্রজেক্ট পেজে সরাসরি সেই মডিউলে যাবে।</p>
+    </div>
+    <div class="track-card">
+      <div id="moduleRows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== JOURNEY MAP ===================== -->
+<section id="journey">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">2030 Journey</p>
+      <h2>সম্পূর্ণ জার্নি ম্যাপ</h2>
+      <p class="section-desc">BEGINNER থেকে AI-NATIVE ENGINEER (2030) পর্যন্ত — প্রতিটি ফেইজ ও মডিউলের অবস্থা একসাথে।</p>
+    </div>
+    <div class="timeline" id="journeyTimeline"></div>
+  </div>
+</section>
+
+<footer>
+  <span class="brand-dot"></span>BusinessBrain AI — Tracking Dashboard · Progress GitHub Gist থেকে sync হয়, সব পেজে আপডেট থাকে।
+</footer>
+
+<script src="assets/data.js"></script>
+<script>
+const phaseRows = document.getElementById('phaseRows');
+const moduleRows = document.getElementById('moduleRows');
+const journeyTimeline = document.getElementById('journeyTimeline');
+
+ROADMAP.forEach(phase => {
+  const row = document.createElement('div');
+  row.className = 'track-row';
+  row.innerHTML = `
+    <div class="name">
+      <a href="roadmap.html">Phase ${phase.num} — ${phase.title}</a>
+      <span class="sub">${phase.titleEn}</span>
+    </div>
+    <div class="track-bar"><div id="bar-${phase.id}"></div></div>
+    <div class="track-pct" id="pct-${phase.id}">0%</div>
+  `;
+  phaseRows.appendChild(row);
+});
+
+MODULES.forEach(mod => {
+  const row = document.createElement('div');
+  row.className = 'track-row';
+  row.innerHTML = `
+    <div class="name">
+      <a href="project.html#${mod.id}">${mod.code} — ${mod.name}</a>
+      <span class="sub" id="lock-${mod.id}">লকড</span>
+    </div>
+    <div class="track-bar"><div id="bar-${mod.id}"></div></div>
+    <div class="track-pct" id="pct-${mod.id}">0%</div>
+  `;
+  moduleRows.appendChild(row);
+});
+
+/* Journey map — 10 phase nodes + 6 module nodes */
+function buildJourneyNode(label, idPrefix, isModule){
+  const div = document.createElement('div');
+  div.className = 'phase';
+  div.innerHTML = `
+    <div class="phase-node" id="jnode-${idPrefix}">${isModule ? idPrefix.toUpperCase() : label.num}</div>
+    <div class="phase-card" style="padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+      <div class="phase-title">
+        <span class="phase-label">${isModule ? 'Project Module' : 'Learning Phase ' + label.num}</span>
+        <h3 style="font-size:16px;">${isModule ? label.name + ' (' + label.name_bn + ')' : label.title}</h3>
+      </div>
+      <div class="phase-meta">
+        <div class="mini-progress"><div class="mini-fill" id="jfill-${idPrefix}"></div></div>
+        <span class="mini-pct" id="jpct-${idPrefix}">0%</span>
+      </div>
+    </div>
+  `;
+  return div;
+}
+ROADMAP.forEach(phase => journeyTimeline.appendChild(buildJourneyNode(phase, phase.id, false)));
+MODULES.forEach(mod => journeyTimeline.appendChild(buildJourneyNode(mod, mod.id, true)));
+
+function render(){
+  const s = bbComputeStats();
+
+  document.getElementById('progressFill').style.width = s.overallPct + '%';
+  document.getElementById('progressOut').textContent = s.overallPct + '%';
+  document.getElementById('countOut').textContent = s.totalChecked + ' / ' + s.totalAll;
+  document.getElementById('levelOut').textContent = s.level;
+  document.getElementById('etaOut').textContent = s.etaMonths + ' মাস';
+
+  ROADMAP.forEach(phase => {
+    const p = s.perPhase[phase.id];
+    document.getElementById('bar-' + phase.id).style.width = p.pct + '%';
+    document.getElementById('pct-' + phase.id).textContent = p.pct + '%';
+    document.getElementById('jfill-' + phase.id).style.width = p.pct + '%';
+    document.getElementById('jpct-' + phase.id).textContent = p.pct + '%';
+    const jnode = document.getElementById('jnode-' + phase.id);
+    jnode.classList.remove('active','complete');
+    if(p.pct === 100) jnode.classList.add('complete');
+    else if(p.pct > 0) jnode.classList.add('active');
+  });
+
+  let unlockedCount = 0;
+  MODULES.forEach(mod => {
+    const m = s.perModule[mod.id];
+    document.getElementById('bar-' + mod.id).style.width = m.pct + '%';
+    document.getElementById('pct-' + mod.id).textContent = m.pct + '%';
+    document.getElementById('jfill-' + mod.id).style.width = m.pct + '%';
+    document.getElementById('jpct-' + mod.id).textContent = m.pct + '%';
+    document.getElementById('lock-' + mod.id).textContent = m.unlocked ? 'আনলকড' : `লকড — ${m.requiredProgress}% রেডি`;
+
+    const jnode = document.getElementById('jnode-' + mod.id);
+    jnode.classList.remove('active','complete');
+    if(m.pct === 100) jnode.classList.add('complete');
+    else if(m.unlocked || m.pct > 0) jnode.classList.add('active');
+
+    if(m.unlocked) unlockedCount++;
+  });
+  document.getElementById('moduleOut').textContent = unlockedCount + ' / ' + MODULES.length;
+
+  // Next best step
+  let nextPhase = ROADMAP.find(ph => s.perPhase[ph.id].pct < 100);
+  const box = document.getElementById('nextStepBox');
+  if(!nextPhase){
+    box.innerHTML = `<span class="label">NEXT</span> 🎉 সব ফেইজ সম্পন্ন! তুমি এখন <strong>AI-NATIVE ENGINEER (2030)</strong> লেভেলে — এখন Autonomous Feature Builder পলিশ করো এবং রিয়েল ইউজার দিয়ে টেস্ট করো।`;
+  } else {
+    const p = s.perPhase[nextPhase.id];
+    // find first unchecked item
+    const stateNow = bbLoadProgress();
+    let nextItem = null;
+    for(let i=0;i<nextPhase.items.length;i++){
+      if(!bbIsChecked(stateNow, nextPhase.id + '-i' + i)){ nextItem = nextPhase.items[i]; break; }
+    }
+    box.innerHTML = `<span class="label">NEXT</span>
+      <strong>Phase ${nextPhase.num} — ${nextPhase.title}</strong> (${p.pct}% সম্পন্ন)।
+      পরবর্তী স্কিল: <strong>${nextItem}</strong>।
+      বিস্তারিত "কোথায় ও কীভাবে শিখবে" দেখো <a href="roadmap.html">রোডম্যাপ পেজে</a>।
+      এই ফেইজ শেষ হলে: <em>${nextPhase.buildTask}</em>`;
+  }
+}
+
+function resetAll(){
+  const sure = confirm('তুমি কি নিশ্চিত? "RESET ROADMAP" — এই কমান্ডে সম্পূর্ণ প্রোগ্রেস ০% এ ফিরে যাবে (সব পেজে)।');
+  if(!sure) return;
+  bbResetProgress();
+  render();
+}
+
+async function init() {
+  const result = await bbInitPage();
+  if (result.shareMode) {
+    const resetBtn = document.querySelector('.reset-btn');
+    if (resetBtn) resetBtn.style.display = 'none';
+    const ghBtn = document.getElementById('ghSetupBtn');
+    if (ghBtn) ghBtn.style.display = 'none';
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) shareBtn.style.display = 'none';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#1e293b;color:#94a3b8;text-align:center;padding:8px;font-size:12px;letter-spacing:0.5px;';
+    banner.textContent = '👁 VIEW ONLY — শেয়ার লিংকে এসেছো, কোনো পরিবর্তন সেভ হবে না';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+  render();
+  /* Real-time cross-device sync */
+  if (!result.shareMode) {
+    bbStartPolling(15000);
+    window.addEventListener('bb:remoteUpdate', () => render());
+  }
+}
+init();
+</script>
+</body>
+</html>

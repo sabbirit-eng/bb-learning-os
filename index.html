@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusinessBrain AI — Learning OS</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>BUSINESSBRAIN_AI · LEARNING_OS</div>
+    <div class="page-links">
+      <a href="index.html" class="active">হোম</a>
+      <a href="roadmap.html">রোডম্যাপ</a>
+      <a href="project.html">প্রজেক্ট</a>
+      <a href="tracking.html">ট্র্যাকিং</a>
+    </div>
+    <span id="bbSyncBadge" class="bb-sync-badge bb-sync-idle" style="font-size:11px;">○ GitHub</span>
+    <button class="reset-btn" onclick="resetAll()">RESET ROADMAP</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Interactive Learning Operating System</p>
+      <h1>২০৩০ সালের <span class="hl">AI-নেটিভ</span> ইঞ্জিনিয়ার হওয়ার <span class="hl2">পথচিত্র</span></h1>
+      <p class="hero-sub">এটি তোমার পার্সোনাল AI CTO ড্যাশবোর্ড। Progress ও Notes GitHub-এ সেভ হয় — যেকোনো ডিভাইস থেকে access এবং share করো। তিনটি আলাদা পেজে কাজ ভাগ করা আছে — <strong>রোডম্যাপ</strong> পেজে কী ও কীভাবে শিখবে, <strong>প্রজেক্ট</strong> পেজে BusinessBrain AI কেমন হবে তার ভিজ্যুয়াল ও মডিউল স্ট্যাটাস, এবং <strong>ট্র্যাকিং</strong> পেজে তোমার লাইভ প্রোগ্রেস।</p>
+    </div>
+    <div class="status-panel">
+      <h4>System Status</h4>
+      <div class="status-row"><span>CURRENT_LEVEL</span><strong id="levelOut">BEGINNER</strong></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="status-row"><span>TOTAL_PROGRESS</span><strong id="progressOut">0%</strong></div>
+      <div class="status-row"><span>CHECKED ITEMS</span><strong id="countOut">0 / 0</strong></div>
+      <div class="status-row"><span>ESTIMATED_COMPLETION</span><strong id="etaOut">36 মাস</strong></div>
+    </div>
+  </div>
+</header>
+
+<section id="pages">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">তিনটি ডেডিকেটেড পেজ</p>
+      <h2>কোথায় কী পাবে</h2>
+      <p class="section-desc">প্রতিটি পেজ আলাদাভাবে ডিজাইন করা — প্রোগ্রেস সব পেজে অটোমেটিক সিঙ্ক থাকে (ব্রাউজারে সংরক্ষিত)।</p>
+    </div>
+    <div class="nav-card-grid">
+      <a class="nav-card" href="roadmap.html">
+        <span class="tag">01 · Roadmap</span>
+        <h3>লার্নিং রোডম্যাপ — ডিটেইলড</h3>
+        <p>১২টি ফেইজ (Phase 00: Git/GitHub থেকে Phase 11: MLOps) + ঐচ্ছিক Django, Flask ও Supabase — মোট ১৩০+ কোর স্কিল, প্রতিটির জন্য কোথায় শিখবে / কীভাবে শিখবে / প্র্যাকটিস প্রজেক্ট, এবং ফেইজ শেষে BusinessBrain AI-এ কী বানাবে তার নির্দেশনা।</p>
+        <span class="go">রোডম্যাপ দেখো →</span>
+      </a>
+      <a class="nav-card" href="project.html">
+        <span class="tag">02 · Project</span>
+        <h3>BusinessBrain AI — প্রজেক্ট প্রিভিউ</h3>
+        <p>সিস্টেম আর্কিটেক্চার ডায়াগ্রাম, ভবিষ্যতের প্রোডাক্ট UI মকআপ, এবং ৬টি মডিউলের লক/আনলক স্ট্যাটাস — তোমার রোডম্যাপ প্রোগ্রেসের সাথে লিংকড।</p>
+        <span class="go">প্রজেক্ট দেখো →</span>
+      </a>
+      <a class="nav-card" href="tracking.html">
+        <span class="tag">03 · Tracking</span>
+        <h3>প্রোগ্রেস ট্র্যাকিং — ডিটেইলড</h3>
+        <p>লেভেল, ETA, প্রতিটি ফেইজ ও মডিউলের প্রোগ্রেস বার, এবং সামগ্রিক জার্নি ম্যাপ এক জায়গায়।</p>
+        <span class="go">ট্র্যাকিং দেখো →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISION ===================== -->
+<section id="vision">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Main Project</p>
+      <h2>প্রজেক্ট: BusinessBrain AI</h2>
+      <p class="section-desc">ভিশন: এমন একটি AI-নেটিভ SaaS প্ল্যাটফর্ম তৈরি করা যেখানে ইউজাররা প্রাকৃতিক ভাষায় (Natural Language) পুরো সফটওয়্যার নিয়ন্ত্রণ করতে পারবে।</p>
+    </div>
+    <div class="vision-card">
+      <p><strong>উদাহরণ কমান্ড — ইউজার যা টাইপ করবে:</strong></p>
+      <div class="chip-row">
+        <span class="chip">"Create inactive customer segment"</span>
+        <span class="chip">"Analyze sales decline"</span>
+        <span class="chip">"Generate customer acquisition strategy"</span>
+        <span class="chip">"Build referral system"</span>
+        <span class="chip">"Create marketing workflow"</span>
+      </div>
+      <p><strong>AI-কে শেষ পর্যন্ত যা করতে হবে:</strong></p>
+      <div class="cap-grid">
+        <div class="cap-item"><span class="dot"></span>বিজনেস কনটেক্সট বোঝা</div>
+        <div class="cap-item"><span class="dot"></span>ডেটাবেস কুয়েরি করা</div>
+        <div class="cap-item"><span class="dot"></span>রিপোর্ট জেনারেট করা</div>
+        <div class="cap-item"><span class="dot"></span>ফলাফল প্রেডিক্ট করা</div>
+        <div class="cap-item"><span class="dot"></span>অ্যাকশন রিকমেন্ড করা</div>
+        <div class="cap-item"><span class="dot"></span>নতুন ফিচার জেনারেট করা</div>
+        <div class="cap-item"><span class="dot"></span>ওয়ার্কফ্লো তৈরি করা</div>
+        <div class="cap-item"><span class="dot"></span>সফটওয়্যারের বিহেভিয়ার মডিফাই করা</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GLOBAL RULES ===================== -->
+<section id="rules">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Global Rules</p>
+      <h2>সিস্টেম নিয়মাবলী (১–৮)</h2>
+      <p class="section-desc">এই ৮টি নিয়ম তোমার AI CTO চিরস্থায়ীভাবে অনুসরণ করবে — প্রতিটি আপডেটে, প্রতিটি রিপোর্টে।</p>
+    </div>
+    <div class="rules-grid">
+      <div class="rule-card"><span class="rule-num">RULE 01</span><p>আমার প্রোগ্রেস স্টেট সবসময় মেইনটেইন করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 02</span><p>সবসময় কমপ্লিশন পার্সেন্টেজ ক্যালকুলেট করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 03</span><p>বাকি লার্নিং টাইম এস্টিমেট করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 04</span><p>পরবর্তী সেরা লার্নিং স্টেপ সাজেস্ট করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 05</span><p>রোডম্যাপ ডায়নামিকভাবে আপডেট করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 06</span><p>ভবিষ্যৎ ইন্ডাস্ট্রি ট্রেন্ড অনুযায়ী রোডম্যাপ ইভোলভ করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 07</span><p>প্রতিটি স্কিল সরাসরি BusinessBrain AI প্রজেক্টে কন্ট্রিবিউট করতে হবে।</p></div>
+      <div class="rule-card"><span class="rule-num">RULE 08</span><p>আমি স্পষ্টভাবে <strong>"RESET ROADMAP"</strong> না লেখা পর্যন্ত প্রোগ্রেস রিসেট করা যাবে না।</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMMANDS ===================== -->
+<section id="commands">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Command Reference</p>
+      <h2>কমান্ডসমূহ</h2>
+      <p class="section-desc">এই কমান্ডগুলো নতুন চ্যাটে এই সিস্টেম প্রম্পট পেস্ট করার পর AI CTO-কে দেওয়া যাবে।</p>
+    </div>
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">UPDATE:</span><h4>প্রোগ্রেস আপডেট করো</h4></div>
+        <div class="cmd-example">UPDATE:
+Completed Python Basics
+Completed OOP</div>
+        <ul>
+          <li>কমপ্লিট হওয়া আইটেম মার্ক করতে হবে</li>
+          <li>কমপ্লিশন % আপডেট করতে হবে</li>
+          <li>বাকি টাস্ক আপডেট করতে হবে</li>
+          <li>এস্টিমেটেড টাইম আপডেট করতে হবে</li>
+          <li>পরের লার্নিং প্ল্যান জেনারেট করতে হবে</li>
+        </ul>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">STATUS</span><h4>বর্তমান অবস্থা দেখাও</h4></div>
+        <div class="cmd-example">STATUS</div>
+        <ul>
+          <li>কারেন্ট প্রোগ্রেস</li>
+          <li>কমপ্লিটেড স্কিলস</li>
+          <li>বাকি স্কিলস</li>
+          <li>প্রজেক্ট স্ট্যাটাস</li>
+          <li>কমপ্লিশন %</li>
+          <li>বাকি সময়ের এস্টিমেট</li>
+        </ul>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">NEXT</span><h4>পরবর্তী প্ল্যান জেনারেট করো</h4></div>
+        <div class="cmd-example">NEXT</div>
+        <ul>
+          <li>আজকের লার্নিং প্ল্যান</li>
+          <li>এই সপ্তাহের প্ল্যান</li>
+          <li>প্রজেক্ট টাস্ক</li>
+          <li>রিসোর্স</li>
+          <li>সার্চ কীওয়ার্ড</li>
+        </ul>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">REVIEW</span><h4>স্কিল রিভিউ করো</h4></div>
+        <div class="cmd-example">REVIEW</div>
+        <ul>
+          <li>স্কিল অ্যাসেসমেন্ট</li>
+          <li>দুর্বল জায়গা</li>
+          <li>শক্তির জায়গা</li>
+          <li>ইম্প্রুভমেন্ট প্ল্যান</li>
+          <li>আপডেটেড রোডম্যাপ</li>
+        </ul>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">BUILD</span><h4>পরবর্তী মডিউল জেনারেট করো</h4></div>
+        <div class="cmd-example">BUILD</div>
+        <ul>
+          <li>আর্কিটেক্চার</li>
+          <li>ডেটাবেস ডিজাইন</li>
+          <li>ফোল্ডার স্ট্রাকচার</li>
+          <li>API ডিজাইন</li>
+          <li>AI ইন্টিগ্রেশন</li>
+          <li>ডিপ্লয়মেন্ট স্ট্র্যাটেজি</li>
+        </ul>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-tag">RESET ROADMAP</span><h4>সম্পূর্ণ রিসেট (শুধু এই কমান্ডে)</h4></div>
+        <div class="cmd-example">RESET ROADMAP</div>
+        <ul>
+          <li>এই একটি কমান্ড ছাড়া প্রোগ্রেস কখনো রিসেট হবে না</li>
+          <li>লেখা মাত্র সমস্ত প্রোগ্রেস ০% এ ফিরে যাবে</li>
+          <li>রোডম্যাপ প্রথম থেকে পুনরায় শুরু হবে</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== AUTO EVOLUTION + FUTURE SKILLS ===================== -->
+<section id="evolution">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Auto Evolution System</p>
+      <h2>অটো ইভোলিউশন &amp; ফিউচার স্কিল মনিটর</h2>
+      <p class="section-desc">প্রতিবার প্রোগ্রেস আপডেট হলে AI CTO নিচের সবকিছু পুনঃমূল্যায়ন করবে।</p>
+    </div>
+    <div class="evo-grid">
+      <ol class="evo-list">
+        <li>রোডম্যাপ রিক্যালকুলেট করা</li>
+        <li>কমপ্লিশন % রিক্যালকুলেট করা</li>
+        <li>বাকি মাস এস্টিমেট করা</li>
+        <li>নতুন ইন্ডাস্ট্রি টেকনোলজি সাজেস্ট করা</li>
+        <li>স্কিল গ্যাপ ডিটেক্ট করা</li>
+        <li>আর্কিটেক্চার ইম্প্রুভমেন্ট রিকমেন্ড করা</li>
+        <li>প্রোডাকশন-রেডি প্র্যাকটিস রিকমেন্ড করা</li>
+      </ol>
+      <div class="future-card">
+        <h3 style="font-size:18px; margin-bottom:10px;">ফিউচার স্কিল মনিটর</h3>
+        <p>প্রতিটি রোডম্যাপ আপডেটে চেক করা হবে এই স্কিলগুলো প্রাসঙ্গিক কিনা — যদি হয়, অটোমেটিক রোডম্যাপে যুক্ত হবে।</p>
+        <div class="tag-grid">
+          <span class="tag">Agentic AI</span>
+          <span class="tag">MCP</span>
+          <span class="tag">AI Operating Systems</span>
+          <span class="tag">Computer Use Agents</span>
+          <span class="tag">Autonomous Coding Agents</span>
+          <span class="tag">AI Workflow Engines</span>
+          <span class="tag">Future LLM Architectures</span>
+          <span class="tag">New Vector Databases</span>
+          <span class="tag">New Cloud Technologies</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== OUTPUT FORMAT ===================== -->
+<section id="output">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Report Template</p>
+      <h2>আউটপুট ফরম্যাট</h2>
+      <p class="section-desc">UPDATE / STATUS / NEXT / REVIEW / BUILD — যেকোনো কমান্ডের পর AI CTO সবসময় এই স্ট্রাকচারে রিপোর্ট দেবে।</p>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="r"></span><span class="y"></span><span class="g"></span>
+        <span class="title">businessbrain_ai — report.template</span>
+      </div>
+      <div class="terminal-body">
+        <span>CURRENT STATUS</span><br>
+        <span>COMPLETION %</span><br>
+        <span>COMPLETED SKILLS</span><br>
+        <span>IN PROGRESS</span><br>
+        <span>REMAINING SKILLS</span><br>
+        <span>PROJECT STATUS</span><br>
+        <span>NEXT LEARNING TASK</span><br>
+        <span>NEXT PROJECT TASK</span><br>
+        <span>ARCHITECTURE UPGRADE SUGGESTIONS</span><br>
+        <span>FUTURE SKILLS TO LEARN</span><br>
+        <span>ESTIMATED TIME TO 2030 LEVEL</span><br>
+        <span class="end">END OF REPORT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="brand-dot"></span>BusinessBrain AI — Interactive Learning Operating System · Progress + Notes GitHub Gist-এ সংরক্ষিত হয়, যেকোনো ডিভাইস থেকে access করো।
+</footer>
+
+<script src="assets/data.js"></script>
+<script>
+function render(){
+  const s = bbComputeStats();
+  document.getElementById('progressFill').style.width = s.overallPct + '%';
+  document.getElementById('progressOut').textContent = s.overallPct + '%';
+  document.getElementById('countOut').textContent = s.totalChecked + ' / ' + s.totalAll;
+  document.getElementById('levelOut').textContent = s.level;
+  document.getElementById('etaOut').textContent = s.etaMonths + ' মাস';
+}
+function resetAll(){
+  const sure = confirm('তুমি কি নিশ্চিত? "RESET ROADMAP" — এই কমান্ডে সম্পূর্ণ প্রোগ্রেস ০% এ ফিরে যাবে (সব পেজে)।');
+  if(!sure) return;
+  bbResetProgress();
+  render();
+}
+async function init() {
+  const result = await bbInitPage();
+  if (result.shareMode) {
+    // Share mode: hide edit controls, show banner
+    const resetBtn = document.querySelector('.reset-btn');
+    if (resetBtn) resetBtn.style.display = 'none';
+    const ghBtn = document.getElementById('ghSetupBtn');
+    if (ghBtn) ghBtn.style.display = 'none';
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) shareBtn.style.display = 'none';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#1e293b;color:#94a3b8;text-align:center;padding:8px;font-size:12px;letter-spacing:0.5px;';
+    banner.textContent = '👁 VIEW ONLY — শেয়ার লিংকে এসেছো, কোনো পরিবর্তন সেভ হবে না';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+  render();
+  /* Real-time cross-device sync */
+  if (!result.shareMode) {
+    bbStartPolling(15000);
+    window.addEventListener('bb:remoteUpdate', () => render());
+  }
+}
+init();
+</script>
+</body>
+</html>

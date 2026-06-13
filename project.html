@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>প্রজেক্ট — BusinessBrain AI Learning OS</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>BUSINESSBRAIN_AI · LEARNING_OS</div>
+    <div class="page-links">
+      <a href="index.html">হোম</a>
+      <a href="roadmap.html">রোডম্যাপ</a>
+      <a href="project.html" class="active">প্রজেক্ট</a>
+      <a href="tracking.html">ট্র্যাকিং</a>
+    </div>
+    <span id="bbSyncBadge" class="bb-sync-badge bb-sync-idle" style="font-size:11px;">○ GitHub</span>
+    <button class="reset-btn" onclick="resetAll()">RESET ROADMAP</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Future Product Preview</p>
+      <h1><span class="hl">BusinessBrain AI</span> — প্রজেক্ট প্রিভিউ</h1>
+      <p class="hero-sub">এই পেজে দেখবে ভবিষ্যতে তুমি কী বানাবে — সিস্টেম আর্কিটেক্চার, প্রোডাক্ট UI মকআপ এবং ৬টি মডিউলের <strong>লক/আনলক স্ট্যাটাস</strong>, যা রোডম্যাপ পেজের প্রোগ্রেসের সাথে লাইভ সিঙ্ক থাকে।</p>
+    </div>
+    <div class="status-panel">
+      <h4>Module Readiness</h4>
+      <div class="status-row"><span>UNLOCKED MODULES</span><strong id="unlockedOut">0 / 6</strong></div>
+      <div class="progress-track"><div class="progress-fill" id="moduleFill"></div></div>
+      <div class="status-row"><span>NEXT TO UNLOCK</span><strong id="nextOut">—</strong></div>
+      <div class="status-row"><span>TOTAL_PROGRESS</span><strong id="progressOut">0%</strong></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">System Architecture</p>
+      <h2>BusinessBrain AI — সিস্টেম আর্কিটেক্চার</h2>
+      <p class="section-desc">ইউজারের প্রাকৃতিক ভাষার কমান্ড কীভাবে পুরো সিস্টেমের ভেতর দিয়ে প্রবাহিত হয়ে রেজাল্ট হয়ে ফিরে আসে — উপর থেকে নিচে।</p>
+    </div>
+    <div class="arch-wrap">
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 0 · User</span>
+        <div class="arch-name">ইউজার — প্রাকৃতিক ভাষায় কমান্ড (বাংলা / ইংরেজি)</div>
+        <div class="arch-desc">যেমন: "Analyze sales decline" বা "নিষ্ক্রিয় কাস্টমারদের সেগমেন্ট বানাও"</div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↓</span></div>
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 1 · Frontend — Next.js + TypeScript</span>
+        <div class="arch-name">চ্যাট ইন্টারফেস + ড্যাশবোর্ড UI</div>
+        <div class="arch-desc">Phase 5 স্কিল দিয়ে তৈরি — CRM ভিউ, KPI ড্যাশবোর্ড এবং AI চ্যাট প্যানেল একসাথে।</div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↓</span></div>
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 2 · API Gateway — FastAPI</span>
+        <div class="arch-name">Auth (JWT/OAuth2) · Rate Limiting · Request Routing</div>
+        <div class="arch-desc">Phase 3 ও Phase 10 স্কিল দিয়ে তৈরি — প্রতিটি রিকোয়েস্ট এখানে যাচাই হয়ে সঠিক সার্ভিসে যায়।</div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↓</span></div>
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 3 · AI Agent Layer — LangGraph (Phase 7 + 8)</span>
+        <div class="arch-name" style="margin-bottom:10px;">Intent Router → Multi-Agent Orchestration</div>
+        <div class="arch-split">
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">NL Query Agent</div>
+            <div class="arch-desc">M3 · AI Chat Interface</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">RAG / Knowledge Agent</div>
+            <div class="arch-desc">M4 · RAG System</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">Analytics Agent</div>
+            <div class="arch-desc">M2 · Analytics Engine</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">Workflow Agent</div>
+            <div class="arch-desc">M5 · AI Agent System</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">Feature Builder Agent</div>
+            <div class="arch-desc">M6 · Autonomous Feature Builder</div>
+          </div>
+        </div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↓</span></div>
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 4 · Data &amp; Knowledge — Phase 4</span>
+        <div class="arch-split">
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">PostgreSQL</div>
+            <div class="arch-desc">CRM Core ডেটা (Customers, Leads, Deals)</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">Qdrant (Vector DB)</div>
+            <div class="arch-desc">ডকুমেন্ট এমবেডিং — RAG রিট্রিভাল</div>
+          </div>
+          <div class="arch-layer" style="background:var(--surface);">
+            <div class="arch-name" style="font-size:13.5px;">Redis Cache</div>
+            <div class="arch-desc">দ্রুত রেসপন্সের জন্য ক্যাশিং</div>
+          </div>
+        </div>
+      </div>
+      <div class="arch-row"><span class="arch-arrow">↺</span></div>
+
+      <div class="arch-layer">
+        <span class="arch-label">Layer 5 · MLOps &amp; Monitoring — Phase 11</span>
+        <div class="arch-name">MLflow / Langfuse — মডেল ভার্সনিং, কস্ট ও পারফরম্যান্স মনিটরিং</div>
+        <div class="arch-desc">এজেন্ট লেয়ারের প্রতিটি কলের ফলাফল এখানে লগ হয়, ফিডব্যাক লুপ তৈরি করে Layer 3-কে উন্নত করে।</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== UI MOCKUP ===================== -->
+<section id="preview">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Product Preview</p>
+      <h2>ভবিষ্যতের ড্যাশবোর্ড — UI মকআপ</h2>
+      <p class="section-desc">এটি BusinessBrain AI-এর ভবিষ্যৎ হোম স্ক্রিনের একটি ধারণা — বাম পাশে নেভিগেশন, ডানে KPI ও AI চ্যাট প্যানেল একসাথে।</p>
+    </div>
+    <div class="mockup-frame">
+      <div class="mockup-titlebar">
+        <span class="r"></span><span class="y"></span><span class="g"></span>
+        <span class="url">app.businessbrain.ai/dashboard</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-sidebar">
+          <div class="logo">BusinessBrain</div>
+          <div class="mockup-nav-item active">▣ ড্যাশবোর্ড</div>
+          <div class="mockup-nav-item">◷ CRM Core</div>
+          <div class="mockup-nav-item">▤ Analytics</div>
+          <div class="mockup-nav-item">◎ AI চ্যাট</div>
+          <div class="mockup-nav-item">◫ Knowledge Base</div>
+          <div class="mockup-nav-item">⚙ Agents</div>
+        </div>
+        <div class="mockup-main">
+          <div class="mockup-kpi-row">
+            <div class="mockup-kpi"><div class="v">৪২৮</div><div class="l">অ্যাক্টিভ কাস্টমার</div></div>
+            <div class="mockup-kpi"><div class="v">৭৩%</div><div class="l">লিড কনভার্সন</div></div>
+            <div class="mockup-kpi"><div class="v">৬.২%</div><div class="l">চার্ন রেট</div></div>
+            <div class="mockup-kpi"><div class="v">৩১</div><div class="l">নতুন এই সপ্তাহে</div></div>
+          </div>
+
+          <table class="mockup-table">
+            <thead><tr><th>কাস্টমার</th><th>স্ট্যাটাস</th><th>সম্ভাবনা</th><th>মূল্য</th></tr></thead>
+            <tbody>
+              <tr><td>Anika Traders</td><td><span class="pill green">Active</span></td><td>High</td><td>৫২,০০০৳</td></tr>
+              <tr><td>Rahim Enterprise</td><td><span class="pill amber">At Risk</span></td><td>Medium</td><td>২৮,৫০০৳</td></tr>
+              <tr><td>Nova Tech BD</td><td><span class="pill purple">New Lead</span></td><td>High</td><td>৭৯,০০০৳</td></tr>
+            </tbody>
+          </table>
+
+          <div class="mockup-chat">
+            <div class="mockup-msg user">"গত মাসের তুলনায় বিক্রি কমে যাওয়ার কারণ বিশ্লেষণ করো"</div>
+            <div class="mockup-msg ai">বিশ্লেষণ করছি... প্রধান কারণ: "Inactive Customers" সেগমেন্টে ১৮% বৃদ্ধি এবং Nova Tech BD-এর অর্ডার দেরি। সাজেশন: রিএনগেজমেন্ট ক্যাম্পেইন চালু করো।</div>
+            <div class="mockup-input">
+              <div>তোমার কমান্ড লেখো... (যেমন: "Create marketing workflow")</div>
+              <button>Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MODULE TRACKER ===================== -->
+<section id="modules">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Module Tracker</p>
+      <h2>BusinessBrain AI — ৬টি মডিউল</h2>
+      <p class="section-desc">প্রতিটি মডিউল আনলক হবে যখন তার <strong>রিকোয়ার্ড ফেইজ(গুলো)</strong> রোডম্যাপ পেজে ১০০% কমপ্লিট হবে। প্রতিটি কার্ডের নিচে <strong>"ভিজ্যুয়ালাইজেশন দেখো"</strong>-তে ক্লিক করলে সেই মডিউলের UI মকআপ, ডায়াগ্রাম বা উদাহরণ দেখতে পাবে — এখনই কল্পনা করো ভবিষ্যতে কী বানাচ্ছ।</p>
+    </div>
+    <div class="module-grid" id="moduleGrid"></div>
+  </div>
+</section>
+
+<footer>
+  <span class="brand-dot"></span>BusinessBrain AI — Project Preview · মডিউল লক/আনলক স্ট্যাটাস রোডম্যাপ পেজের প্রোগ্রেস থেকে অটোমেটিক ক্যালকুলেট হয়।
+</footer>
+
+<script src="assets/data.js"></script>
+<script>
+const phaseTitleMap = {};
+ROADMAP.forEach(p => phaseTitleMap[p.id] = p);
+
+const moduleGrid = document.getElementById('moduleGrid');
+
+function chevronSVG(){
+  return '<svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+}
+
+function moduleVisualHTML(modId){
+  if(modId === 'm1'){
+    return `
+      <p class="preview-subtitle">CRM Core চালু হলে এমন একটি Lead Pipeline (Kanban Board) দেখতে পাবে — প্রতিটি কার্ড একজন কাস্টমার/ডিল, কলামগুলো পাইপলাইন স্টেজ।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">Lead Pipeline — Kanban Board</span>
+        <div class="kanban-board">
+          <div class="kanban-col">
+            <span class="kanban-col-title">নতুন লিড</span>
+            <div class="kanban-card">Bashundhara Group<span class="v">৮৫,০০০৳</span></div>
+            <div class="kanban-card">Walton Digi-Tech<span class="v">৪২,০০০৳</span></div>
+          </div>
+          <div class="kanban-col">
+            <span class="kanban-col-title">যোগাযোগ হয়েছে</span>
+            <div class="kanban-card">Pran Group<span class="v">৬০,০০০৳</span></div>
+            <div class="kanban-card">Nova Tech BD<span class="v">৭৯,০০০৳</span></div>
+          </div>
+          <div class="kanban-col">
+            <span class="kanban-col-title">প্রস্তাব পাঠানো</span>
+            <div class="kanban-card">Square Pharma<span class="v">১,২০,০০০৳</span></div>
+          </div>
+          <div class="kanban-col">
+            <span class="kanban-col-title">জিতেছে ✓</span>
+            <div class="kanban-card">Akij Group<span class="v">৯৫,০০০৳</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">Customer 360° ভিউ</span>
+        <p style="font-size:13.5px; color:var(--text); margin:0;">কোনো কার্ডে ক্লিক করলে সেই কাস্টমারের সম্পূর্ণ হিস্টোরি দেখা যাবে — যোগাযোগের তথ্য, অতীত অর্ডার, AI চ্যাট-এর মাধ্যমে দেওয়া নোট এবং Analytics Engine থেকে পাওয়া রিস্ক স্কোর — সব এক জায়গায়।</p>
+      </div>
+    `;
+  }
+
+  if(modId === 'm2'){
+    return `
+      <p class="preview-subtitle">Analytics Engine CRM Core-এর ডেটা থেকে এই ধরনের KPI চার্ট, সেগমেন্টেশন এবং রিস্ক রিপোর্ট তৈরি করবে।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">মাসিক সেলস ফোরকাস্ট (লাখ টাকা)</span>
+        <div class="bar-chart">
+          <div class="bar-col"><span class="bv">৪২</span><div class="bar" style="height:70%;"></div><span class="bl">জানু</span></div>
+          <div class="bar-col"><span class="bv">৪৮</span><div class="bar" style="height:80%;"></div><span class="bl">ফেব</span></div>
+          <div class="bar-col"><span class="bv">৪৫</span><div class="bar" style="height:75%;"></div><span class="bl">মার্চ</span></div>
+          <div class="bar-col"><span class="bv">৫২</span><div class="bar" style="height:87%;"></div><span class="bl">এপ্রিল</span></div>
+          <div class="bar-col"><span class="bv">৬০</span><div class="bar" style="height:100%;"></div><span class="bl">মে</span></div>
+          <div class="bar-col"><span class="bv">৫৮</span><div class="bar" style="height:97%;"></div><span class="bl">জুন</span></div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">কাস্টমার সেগমেন্ট ব্রেকডাউন</span>
+        <div class="donut-row">
+          <div class="donut" style="background:conic-gradient(var(--accent) 0% 55%, var(--warn) 55% 80%, var(--border) 80% 100%);">
+            <div class="donut-hole">৪২৮<br>টোটাল</div>
+          </div>
+          <div class="donut-legend">
+            <div><span class="legend-dot" style="background:var(--accent);"></span>Active — ৫৫%</div>
+            <div><span class="legend-dot" style="background:var(--warn);"></span>At Risk — ২৫%</div>
+            <div><span class="legend-dot" style="background:var(--border);"></span>Inactive — ২০%</div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">চার্ন রিস্ক — টপ ৩</span>
+        <table class="mockup-table">
+          <thead><tr><th>কাস্টমার</th><th>রিস্ক স্কোর</th><th>সাজেশন</th></tr></thead>
+          <tbody>
+            <tr><td>Rahim Enterprise</td><td><span class="pill amber">৭৮%</span></td><td>রিএনগেজমেন্ট কল</td></tr>
+            <tr><td>Nova Tech BD</td><td><span class="pill amber">৬৫%</span></td><td>ডিসকাউন্ট অফার</td></tr>
+            <tr><td>City Traders</td><td><span class="pill green">৩১%</span></td><td>নিয়মিত ফলোআপ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  if(modId === 'm3'){
+    return `
+      <p class="preview-subtitle">AI Chat Interface ইউজারের লেখা কমান্ড বুঝে সঠিক এজেন্টে রাউট করবে এবং স্ট্রিমিং রেসপন্স দেখাবে।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">উদাহরণ কথোপকথন</span>
+        <div class="mockup-chat" style="flex:none;">
+          <div class="mockup-msg user">"এই মাসের মোট সেল কত হয়েছে?"</div>
+          <div class="mockup-msg ai">এই মাসে মোট বিক্রি ৫৮ লাখ টাকা — গত মাসের তুলনায় ৩.৬% কম। বিস্তারিত চার্ট Analytics Engine-এ দেখানো হচ্ছে।</div>
+          <div class="mockup-msg user">"Create marketing workflow for inactive customers"</div>
+          <div class="mockup-msg ai">Workflow Agent-কে রাউট করা হচ্ছে... ২০% নিষ্ক্রিয় কাস্টমারদের জন্য একটি ৩-স্টেপ রিএনগেজমেন্ট ক্যাম্পেইন তৈরি হয়েছে — অনুমোদনের জন্য অপেক্ষা করছে।</div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">Intent Routing — কমান্ড কোথায় যায়</span>
+        <table class="mockup-table">
+          <thead><tr><th>ইউজার কমান্ড (উদাহরণ)</th><th>রাউট হবে</th><th>মডিউল</th></tr></thead>
+          <tbody>
+            <tr><td>"Analyze sales decline"</td><td>Analytics Agent</td><td><span class="pill purple">M2</span></td></tr>
+            <tr><td>"আমাদের রিফান্ড পলিসি কী?"</td><td>RAG / Knowledge Agent</td><td><span class="pill purple">M4</span></td></tr>
+            <tr><td>"Create marketing workflow"</td><td>Workflow Agent</td><td><span class="pill purple">M5</span></td></tr>
+            <tr><td>"নতুন ফিচার যুক্ত করো..."</td><td>Feature Builder Agent</td><td><span class="pill purple">M6</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  if(modId === 'm4'){
+    return `
+      <p class="preview-subtitle">RAG System কোম্পানির ডকুমেন্ট থেকে রেফারেন্স-সহ উত্তর দেওয়ার জন্য এই পাইপলাইন অনুসরণ করবে।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">RAG পাইপলাইন</span>
+        <div class="arch-wrap" style="padding:16px;">
+          <div class="arch-layer">
+            <span class="arch-label">Step 1 · Source</span>
+            <div class="arch-name" style="font-size:13.5px;">ডকুমেন্ট সোর্স — Policy PDF, Product Docs, পুরোনো রিপোর্ট</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 2 · Chunking</span>
+            <div class="arch-name" style="font-size:13.5px;">৫০০ টোকেনের চাঙ্কে ভাগ + ওভারল্যাপ</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 3 · Embedding</span>
+            <div class="arch-name" style="font-size:13.5px;">এমবেডিং মডেল — টেক্সট → ভেক্টর</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 4 · Vector Store</span>
+            <div class="arch-name" style="font-size:13.5px;">Qdrant — সেমান্টিক সার্চ ইনডেক্স</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 5 · Retrieval + Generation</span>
+            <div class="arch-name" style="font-size:13.5px;">ইউজার কোয়েরি → Top-K চাঙ্ক রিট্রিভ → LLM + কনটেক্সট → সোর্স-সাইটেড উত্তর</div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">উদাহরণ</span>
+        <div class="mockup-chat" style="flex:none;">
+          <div class="mockup-msg user">"আমাদের রিফান্ড পলিসি কী?"</div>
+          <div class="mockup-msg ai">কোনো প্রোডাক্ট ডেলিভারির ৭ দিনের মধ্যে রিটার্ন করা গেলে ফুল রিফান্ড দেওয়া হয়। <span class="pill green">সূত্র: Refund_Policy.pdf, পৃষ্ঠা ৩</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  if(modId === 'm5'){
+    return `
+      <p class="preview-subtitle">AI Agent System একসাথে একাধিক এজেন্ট চালিয়ে জটিল কমান্ড সম্পন্ন করবে এবং নিজে থেকে ওয়ার্কফ্লো চালাতে পারবে।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">মাল্টি-এজেন্ট অর্কেস্ট্রেশন</span>
+        <div class="arch-wrap" style="padding:16px;">
+          <div class="arch-layer">
+            <span class="arch-label">Input</span>
+            <div class="arch-name" style="font-size:13.5px;">ইউজার কমান্ড (Natural Language)</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Orchestrator</span>
+            <div class="arch-name" style="font-size:13.5px;">Router Agent (LangGraph) — টাস্ক ভেঙে সাব-এজেন্টদের দেয়</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-split">
+            <div class="arch-layer" style="background:var(--surface);"><div class="arch-name" style="font-size:13px;">Analytics Agent</div></div>
+            <div class="arch-layer" style="background:var(--surface);"><div class="arch-name" style="font-size:13px;">CRM Agent</div></div>
+            <div class="arch-layer" style="background:var(--surface);"><div class="arch-name" style="font-size:13px;">RAG Agent</div></div>
+            <div class="arch-layer" style="background:var(--surface);"><div class="arch-name" style="font-size:13px;">Notification Agent</div></div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Output</span>
+            <div class="arch-name" style="font-size:13.5px;">সব এজেন্টের রেজাল্ট একসাথে করে চূড়ান্ত উত্তর/অ্যাকশন</div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">উদাহরণ: অটোমেটেড ওয়ার্কফ্লো</span>
+        <div class="flow-row">
+          <div class="flow-box"><span class="ft">Trigger</span>নতুন লিড তৈরি হলে</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-box"><span class="ft">Wait</span>৫ মিনিট পর</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-box"><span class="ft">Action</span>ওয়েলকাম ইমেইল পাঠাও</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-box"><span class="ft">Action</span>CRM-এ স্ট্যাটাস আপডেট করো</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if(modId === 'm6'){
+    return `
+      <p class="preview-subtitle">Autonomous Feature Builder একটি ফিডব্যাক লুপ — নতুন ফিচার রিকোয়েস্ট থেকে শুরু করে নিরাপদে কোড জেনারেট, টেস্ট ও ডিপ্লয় করা পর্যন্ত।</p>
+      <div class="preview-block">
+        <span class="preview-block-title">ফিচার বিল্ড লুপ</span>
+        <div class="arch-wrap" style="padding:16px;">
+          <div class="arch-layer">
+            <span class="arch-label">Step 1</span>
+            <div class="arch-name" style="font-size:13.5px;">ফিচার রিকোয়েস্ট / রোডম্যাপ গ্যাপ ডিটেকশন</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 2</span>
+            <div class="arch-name" style="font-size:13.5px;">AI Code-Gen Agent — কোড + টেস্ট লেখে</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 3</span>
+            <div class="arch-name" style="font-size:13.5px;">Secure Sandbox-এ টেস্ট (RBAC + Prompt Injection Defense)</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 4</span>
+            <div class="arch-name" style="font-size:13.5px;">হিউম্যান রিভিউ গেট — অনুমোদন</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓</span></div>
+          <div class="arch-layer">
+            <span class="arch-label">Step 5</span>
+            <div class="arch-name" style="font-size:13.5px;">ডিপ্লয় + MLOps মনিটরিং (MLflow/Langfuse)</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↺</span></div>
+        </div>
+      </div>
+      <div class="preview-block">
+        <span class="preview-block-title">উদাহরণ ফিচার রিকোয়েস্ট</span>
+        <div class="feature-card">
+          <div class="req"><span class="label">Request</span>"কাস্টমারদের জন্মদিনে অটো-ডিসকাউন্ট কুপন পাঠাও"</div>
+          <div class="step-list">
+            <div class="step-row">কোড জেনারেট হয়েছে <span class="pill green">✓ সম্পন্ন</span></div>
+            <div class="step-row">স্যান্ডবক্স টেস্ট পাস <span class="pill green">✓ সম্পন্ন</span></div>
+            <div class="step-row">হিউম্যান রিভিউ <span class="pill amber">⏳ অপেক্ষমান</span></div>
+            <div class="step-row">প্রোডাকশন ডিপ্লয় <span class="pill purple">— বাকি</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return '';
+}
+
+function buildModuleCard(mod){
+  const card = document.createElement('div');
+  card.className = 'module-card';
+  card.id = mod.id;
+
+  const reqPills = mod.requiredPhases.map(pid => {
+    const ph = phaseTitleMap[pid];
+    return `<span class="req-pill" id="req-${mod.id}-${pid}">Phase ${ph.num} · ${ph.title}</span>`;
+  }).join('');
+
+  const subtasks = mod.subtasks.map((st, i) => {
+    const id = mod.id + '-s' + i;
+    const ph = phaseTitleMap[st.phase];
+    return `<label class="check"><input type="checkbox" data-id="${id}"><span class="box"></span><span class="label-text">${st.name} <span class="mono" style="color:var(--muted); font-size:11.5px;">— Phase ${ph.num}</span></span></label>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="module-head">
+      <div class="module-head-left">
+        <span class="module-code">${mod.code}</span>
+        <div>
+          <h3>${mod.name}</h3>
+          <div class="module-sub">${mod.name_bn}</div>
+        </div>
+      </div>
+      <span class="status-badge" id="badge-${mod.id}">লক করা</span>
+    </div>
+    <p class="desc">${mod.desc}</p>
+    <div class="module-progress-row">
+      <div class="mini-progress"><div class="mini-fill" id="fill-${mod.id}"></div></div>
+      <span class="mini-pct" id="pct-${mod.id}">0%</span>
+    </div>
+    <div class="req-row">${reqPills}</div>
+    <div class="subtask-list">${subtasks}</div>
+    <details class="module-preview">
+      <summary>ভিজ্যুয়ালাইজেশন দেখো — এই মডিউল কেমন হবে ${chevronSVG()}</summary>
+      ${moduleVisualHTML(mod.id)}
+    </details>
+  `;
+  return card;
+}
+
+MODULES.forEach(mod => moduleGrid.appendChild(buildModuleCard(mod)));
+
+const state = bbLoadProgress();
+document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
+  cb.checked = bbIsChecked(state, cb.dataset.id);
+  cb.addEventListener('change', () => {
+    bbSetChecked(state, cb.dataset.id, cb.checked);
+    render();
+  });
+});
+
+function render(){
+  const s = bbComputeStats();
+
+  let unlockedCount = 0;
+  let nextToUnlock = null;
+
+  MODULES.forEach(mod => {
+    const m = s.perModule[mod.id];
+    document.getElementById('fill-' + mod.id).style.width = m.pct + '%';
+    document.getElementById('pct-' + mod.id).textContent = m.pct + '%';
+
+    const badge = document.getElementById('badge-' + mod.id);
+    const card = document.getElementById(mod.id);
+    if(m.unlocked){
+      badge.textContent = 'আনলকড';
+      badge.className = 'status-badge unlocked';
+      card.className = 'module-card unlocked';
+      unlockedCount++;
+    } else {
+      badge.textContent = `লকড — ${m.requiredProgress}% রেডি`;
+      badge.className = 'status-badge locked';
+      card.className = 'module-card locked';
+      if(!nextToUnlock || m.requiredProgress > nextToUnlock.pct){
+        nextToUnlock = { name: mod.name, pct: m.requiredProgress };
+      }
+    }
+
+    mod.requiredPhases.forEach(pid => {
+      const pill = document.getElementById(`req-${mod.id}-${pid}`);
+      if(s.perPhase[pid].pct === 100) pill.classList.add('done');
+      else pill.classList.remove('done');
+    });
+  });
+
+  document.getElementById('unlockedOut').textContent = unlockedCount + ' / ' + MODULES.length;
+  document.getElementById('moduleFill').style.width = Math.round((unlockedCount / MODULES.length) * 100) + '%';
+  document.getElementById('nextOut').textContent = nextToUnlock ? `${nextToUnlock.name} (${nextToUnlock.pct}%)` : 'সব আনলকড!';
+  document.getElementById('progressOut').textContent = s.overallPct + '%';
+}
+
+function resetAll(){
+  const sure = confirm('তুমি কি নিশ্চিত? "RESET ROADMAP" — এই কমান্ডে সম্পূর্ণ প্রোগ্রেস ০% এ ফিরে যাবে (সব পেজে)।');
+  if(!sure) return;
+  bbResetProgress();
+  document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => cb.checked = false);
+  render();
+}
+
+async function init() {
+  const result = await bbInitPage();
+  if (result.shareMode) {
+    const resetBtn = document.querySelector('.reset-btn');
+    if (resetBtn) resetBtn.style.display = 'none';
+    const ghBtn = document.getElementById('ghSetupBtn');
+    if (ghBtn) ghBtn.style.display = 'none';
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) shareBtn.style.display = 'none';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#1e293b;color:#94a3b8;text-align:center;padding:8px;font-size:12px;letter-spacing:0.5px;';
+    banner.textContent = '👁 VIEW ONLY — শেয়ার লিংকে এসেছো, কোনো পরিবর্তন সেভ হবে না';
+    document.body.insertBefore(banner, document.body.firstChild);
+    // Disable all checkboxes
+    document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => { cb.disabled = true; });
+  }
+  render();
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>রোডম্যাপ — BusinessBrain AI Learning OS</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- ===== SHARE MODE BANNER ===== -->
+<div id="shareBanner" class="share-banner" style="display:none;">
+  👁️ <strong>Read-only View</strong> — তুমি শুধু এই রোডম্যাপের progress দেখতে পারছো, কোনো পরিবর্তন করা যাবে না।
+  <button onclick="copyCurrentUrl()" class="share-copy-small">🔗 লিংক কপি করো</button>
+</div>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>BUSINESSBRAIN_AI · LEARNING_OS</div>
+    <div class="page-links">
+      <a href="index.html">হোম</a>
+      <a href="roadmap.html" class="active">রোডম্যাপ</a>
+      <a href="project.html">প্রজেক্ট</a>
+      <a href="tracking.html">ট্র্যাকিং</a>
+    </div>
+    <div class="nav-tools" id="navTools">
+      <span id="bbSyncBadge" class="bb-sync-badge bb-sync-idle">○ GitHub: Setup</span>
+      <button class="gh-setup-btn" id="ghSetupBtn" onclick="openGHModal()">⚙ GitHub</button>
+      <button class="share-btn" id="shareBtn" onclick="openShareModal()">🔗 শেয়ার</button>
+      <button class="reset-btn" id="resetBtn" onclick="resetAll()">RESET</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== GITHUB SETUP MODAL ===== -->
+<div id="ghModalOverlay" class="modal-overlay" style="display:none;" onclick="closeGHModal()"></div>
+<div id="ghModal" class="gh-modal" style="display:none;">
+  <div class="gh-modal-head">
+    <h3>⚙ GitHub Storage Setup</h3>
+    <button class="modal-close" onclick="closeGHModal()">✕</button>
+  </div>
+  <p class="gh-modal-desc">তোমার progress ও notes GitHub Gist-এ সেভ হবে — যেকোনো ডিভাইস বা ব্রাউজার থেকে access করতে পারবে। Gist টি <strong>public</strong> হবে তাই share link কাজ করবে।</p>
+
+  <div class="gh-step-list">
+    <div class="gh-step">
+      <span class="gh-step-num">1</span>
+      <div class="gh-step-body">
+        <strong>GitHub Personal Access Token (Classic) তৈরি করো</strong>
+        <p>github.com → Settings → Developer Settings → Personal Access Tokens → Tokens (classic) → Generate new token</p>
+        <p>Expiration: যতদিন চাও। Scope: শুধু <code>gist</code> সিলেক্ট করো।</p>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=BB-LearningOS" target="_blank" rel="noopener" class="gh-link-btn">→ GitHub-এ Token তৈরি করো</a>
+      </div>
+    </div>
+    <div class="gh-step">
+      <span class="gh-step-num">2</span>
+      <div class="gh-step-body">
+        <strong>Token নিচে পেস্ট করো</strong>
+        <div class="gh-input-row">
+          <input type="password" id="ghTokenInput" class="gh-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <button class="gh-connect-btn" onclick="connectGitHub()">Connect</button>
+        </div>
+        <p id="ghConnectStatus" class="gh-status-msg" style="display:none;"></p>
+      </div>
+    </div>
+    <div class="gh-step" id="ghConnectedInfo" style="display:none;">
+      <span class="gh-step-num">✓</span>
+      <div class="gh-step-body">
+        <strong>GitHub সংযুক্ত আছে</strong>
+        <p>Gist ID: <a id="ghGistLink" href="#" target="_blank" rel="noopener"><code id="ghGistIdTxt"></code></a></p>
+        <button class="gh-disconnect-btn" onclick="disconnectGitHub()">Disconnect করো</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gh-share-box" id="ghShareBox" style="display:none;">
+    <h4>🔗 Share Link</h4>
+    <p>এই লিংক শেয়ার করলে যে কেউ তোমার roadmap progress দেখতে পারবে — কিন্তু কোনো পরিবর্তন বা reset করতে পারবে না।</p>
+    <div class="share-link-row">
+      <input type="text" id="shareLinkVal" class="gh-input share-link-input" readonly>
+      <button onclick="copyShareLink()" class="copy-link-btn" id="copyLinkBtn">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHARE INFO MODAL ===== -->
+<div id="shareModalOverlay" class="modal-overlay" style="display:none;" onclick="closeShareModal()"></div>
+<div id="shareModal" class="gh-modal" style="display:none;">
+  <div class="gh-modal-head">
+    <h3>🔗 Roadmap শেয়ার করো</h3>
+    <button class="modal-close" onclick="closeShareModal()">✕</button>
+  </div>
+  <div id="shareModalContent">
+    <p class="gh-modal-desc">নিচের লিংকটি শেয়ার করো। যে কেউ এই লিংক দিয়ে তোমার roadmap progress দেখতে পারবে, কিন্তু কিছু পরিবর্তন করতে পারবে না।</p>
+    <div class="share-link-row">
+      <input type="text" id="shareModalLink" class="gh-input share-link-input" readonly>
+      <button onclick="copyShareLinkFromModal()" class="copy-link-btn" id="copyModalLinkBtn">Copy</button>
+    </div>
+  </div>
+  <div id="shareModalNoGH" style="display:none;">
+    <p class="gh-modal-desc">Share link পেতে আগে <strong>GitHub Setup</strong> করো — তারপর তোমার progress Gist-এ সেভ হবে এবং যে কেউ সেই লিংক দিয়ে দেখতে পারবে।</p>
+    <button class="gh-connect-btn" onclick="closeShareModal(); openGHModal();">GitHub Setup করো →</button>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Phase 00 – 11 · All-in-One Advanced Edition</p>
+      <h1>ডিটেইলড <span class="hl">লার্নিং রোডম্যাপ</span></h1>
+      <p class="hero-sub">প্রতিটি ফেইজে: চেকলিস্ট, কোথায়/কীভাবে শিখবে, <strong>৫টি প্র্যাকটিস প্রশ্ন + ২টি মিনি-প্রজেক্ট</strong>, পার্সোনাল নোট এবং BusinessBrain AI-তে কী বানাবে।</p>
+    </div>
+    <div class="status-panel">
+      <h4>Roadmap Progress</h4>
+      <div class="status-row"><span>CURRENT_LEVEL</span><strong id="levelOut">BEGINNER</strong></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="status-row"><span>TOTAL_PROGRESS</span><strong id="progressOut">0%</strong></div>
+      <div class="status-row"><span>CHECKED ITEMS</span><strong id="countOut">0 / 0</strong></div>
+      <div class="status-row"><span>ESTIMATED_COMPLETION</span><strong id="etaOut">36 মাস</strong></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== ROADMAP ===== -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Learning Roadmap · Phase 1 – 11</p>
+      <h2>লার্নিং রোডম্যাপ (Phase 00–11 · ১২টি ফেইজ · ১৩০+ কোর স্কিল + ঐচ্ছিক Django / Flask / Supabase)</h2>
+      <p class="section-desc">প্রতিটি ফেইজ ওপেন করে আইটেম চেক করো। নোট লেখো এবং প্র্যাকটিস প্রশ্ন/প্রজেক্ট সম্পন্ন করো।</p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<footer>
+  <span class="brand-dot"></span>BusinessBrain AI — Detailed Roadmap v2.0 · Progress + Notes GitHub Gist-এ সংরক্ষিত, সব পেজে সিঙ্ক।
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="assets/data.js"></script>
+<script>
+/* =====================================================
+   UI BUILDERS
+   ===================================================== */
+const timeline = document.getElementById('timeline');
+let _shareMode = false;
+
+function chevronSVG(){
+  return '<svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+}
+
+/* --- Practice section --- */
+function buildPracticeSection(phase) {
+  const pr = PRACTICE[phase.id];
+  if (!pr || (pr.questions.length === 0 && pr.projects.length === 0)) return '';
+
+  const qItems = pr.questions.map((q, i) => `
+    <label class="pq-item ${_shareMode ? 'pq-readonly' : ''}">
+      <input type="checkbox" data-id="${phase.id}-q${i}" class="pq-check" ${_shareMode ? 'disabled' : ''}>
+      <span class="box"></span>
+      <span class="pq-text"><strong>${i+1}.</strong> ${q}</span>
+    </label>`).join('');
+
+  const pItems = pr.projects.map((p, i) => `
+    <label class="pq-item ${_shareMode ? 'pq-readonly' : ''}">
+      <input type="checkbox" data-id="${phase.id}-proj${i}" class="pq-check" ${_shareMode ? 'disabled' : ''}>
+      <span class="box"></span>
+      <span class="pq-text"><strong>প্রজেক্ট ${i+1}:</strong> ${p}</span>
+    </label>`).join('');
+
+  return `
+    <div class="practice-section">
+      <div class="practice-header-row">
+        <span class="practice-badge">🎯 প্র্যাকটিস চেকলিস্ট</span>
+        <span class="practice-progress-txt" id="pr-prog-${phase.id}">
+          প্রশ্ন 0/${pr.questions.length} &nbsp;|&nbsp; প্রজেক্ট 0/${pr.projects.length}
+        </span>
+      </div>
+
+      <details class="practice-block">
+        <summary class="practice-summary">
+          📋 প্র্যাকটিস প্রশ্ন (${pr.questions.length}টি)
+          <span class="pq-badge" id="qbadge-${phase.id}">0/${pr.questions.length}</span>
+          ${chevronSVG()}
+        </summary>
+        <div class="pq-list">${qItems}</div>
+      </details>
+
+      <details class="practice-block">
+        <summary class="practice-summary">
+          🛠 মিনি-প্রজেক্ট (${pr.projects.length}টি)
+          <span class="pq-badge" id="pbadge-${phase.id}">0/${pr.projects.length}</span>
+          ${chevronSVG()}
+        </summary>
+        <div class="pq-list">${pItems}</div>
+      </details>
+    </div>`;
+}
+
+/* --- Notes section --- */
+function buildNotesSection(phase) {
+  if (_shareMode) {
+    return `
+      <div class="notes-section">
+        <div class="notes-header-row">
+          <span class="notes-badge">📝 নোট — Phase ${phase.num}</span>
+        </div>
+        <div class="notes-view-text" id="note-view-${phase.id}"></div>
+      </div>`;
+  }
+  return `
+    <div class="notes-section">
+      <div class="notes-header-row">
+        <span class="notes-badge">📝 আমার নোট — Phase ${phase.num}</span>
+        <button class="notes-toggle-btn" onclick="toggleNoteArea('${phase.id}', this)">নোট লেখো ▾</button>
+      </div>
+      <div class="notes-area-wrap" id="note-area-${phase.id}" style="display:none;">
+        <textarea
+          class="notes-textarea"
+          id="note-txt-${phase.id}"
+          placeholder="এই ফেইজের গুরুত্বপূর্ণ পয়েন্ট, লিংক, অভিজ্ঞতা লেখো…"
+          rows="5"
+          oninput="onNoteInput('${phase.id}')"
+        ></textarea>
+        <div class="notes-footer-row">
+          <span class="notes-status" id="note-status-${phase.id}">—</span>
+          <button class="notes-save-btn" onclick="saveNote('${phase.id}')">💾 সেভ করো</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* --- Extras section (Django/Flask) --- */
+function buildExtrasSection(phase) {
+  const extras = EXTRAS.filter(ex => ex.attachTo === phase.id);
+  if (!extras.length) return '';
+  const cards = extras.map(ex => `
+    <div class="extra-card">
+      <div class="extra-head">
+        <h5>${ex.name}</h5><span class="extra-tag">${ex.tag}</span>
+      </div>
+      <p class="extra-desc">${ex.desc}</p>
+      <div class="extra-progress-row">
+        <div class="mini-progress"><div class="mini-fill" id="fill-${ex.id}"></div></div>
+        <span class="mini-pct" id="pct-${ex.id}">0%</span>
+      </div>
+      <div class="checklist-grid" id="items-${ex.id}"></div>
+      <div class="learn-block">
+        <div class="learn-col"><h4>কোথায় শিখবে</h4><ul>${ex.learn.where.map(w=>`<li>${w}</li>`).join('')}</ul></div>
+        <div class="learn-col"><h4>কীভাবে শিখবে</h4><p>${ex.learn.how}</p></div>
+        <div class="learn-col"><h4>প্র্যাকটিস প্রজেক্ট</h4><p>${ex.learn.practice}</p></div>
+      </div>
+    </div>`).join('');
+  return `
+    <div class="extras-section">
+      <span class="extras-title">এক্সট্রা ফ্রেমওয়ার্ক — ঐচ্ছিক (ক্যারিয়ার ব্রেডথের জন্য)</span>
+      ${cards}
+      <div class="framework-note">
+        <span class="label">${FRAMEWORK_NOTE.title}</span> ${FRAMEWORK_NOTE.text}
+      </div>
+    </div>`;
+}
+
+/* --- Phase card --- */
+function buildPhaseCard(phase, openFirst) {
+  const phaseDiv = document.createElement('div');
+  phaseDiv.className = 'phase';
+  phaseDiv.dataset.phase = phase.id;
+
+  const node = document.createElement('div');
+  node.className = 'phase-node';
+  node.id = 'node-' + phase.id;
+  node.textContent = phase.num;
+  phaseDiv.appendChild(node);
+
+  const details = document.createElement('details');
+  details.className = 'phase-card';
+  if (openFirst) details.open = true;
+
+  const mod = MODULES.find(m => m.id === phase.module);
+
+  details.innerHTML = `
+    <summary>
+      <div class="phase-title">
+        <span class="phase-label">Phase ${phase.num}</span>
+        <h3>${phase.title} <span class="mono" style="font-size:13px;color:var(--muted);font-weight:400;">— ${phase.titleEn}</span></h3>
+      </div>
+      <div class="phase-meta">
+        <div class="mini-progress"><div class="mini-fill" id="fill-${phase.id}"></div></div>
+        <span class="mini-pct" id="pct-${phase.id}">0%</span>
+        ${chevronSVG()}
+      </div>
+    </summary>
+    <div class="phase-body">
+      <div class="checklist-grid" id="items-${phase.id}"></div>
+
+      <div class="learn-block">
+        <div class="learn-col">
+          <h4>কোথায় শিখবে</h4>
+          <ul>${phase.learn.where.map(w=>`<li>${w}</li>`).join('')}</ul>
+        </div>
+        <div class="learn-col">
+          <h4>কীভাবে শিখবে</h4>
+          <p>${phase.learn.how}</p>
+        </div>
+        <div class="learn-col">
+          <h4>প্র্যাকটিস প্রজেক্ট (Suggested)</h4>
+          <p>${phase.learn.practice}</p>
+        </div>
+      </div>
+
+      ${buildPracticeSection(phase)}
+      ${buildNotesSection(phase)}
+
+      <div class="build-box">
+        <span class="label">এই ফেইজ ১০০% হলে BusinessBrain AI-তে বানাবে →
+          ${mod ? `<a href="project.html#${mod.id}">${mod.code} · ${mod.name}</a>` : ''}
+        </span>
+        ${phase.buildTask}
+      </div>
+
+      ${buildExtrasSection(phase)}
+    </div>`;
+
+  /* checklist items */
+  const grid = details.querySelector('#items-' + phase.id);
+  phase.items.forEach((name, i) => {
+    const id = phase.id + '-i' + i;
+    const label = document.createElement('label');
+    label.className = 'check';
+    if (_shareMode) label.classList.add('check-readonly');
+    label.innerHTML = `<input type="checkbox" data-id="${id}" ${_shareMode ? 'disabled' : ''}><span class="box"></span><span class="label-text">${name}</span>`;
+    grid.appendChild(label);
+  });
+
+  /* extras checklist */
+  EXTRAS.filter(ex => ex.attachTo === phase.id).forEach(ex => {
+    const exGrid = details.querySelector('#items-' + ex.id);
+    if (!exGrid) return;
+    ex.items.forEach((name, i) => {
+      const id = ex.id + '-i' + i;
+      const label = document.createElement('label');
+      label.className = 'check';
+      if (_shareMode) label.classList.add('check-readonly');
+      label.innerHTML = `<input type="checkbox" data-id="${id}" ${_shareMode ? 'disabled' : ''}><span class="box"></span><span class="label-text">${name}</span>`;
+      exGrid.appendChild(label);
+    });
+  });
+
+  phaseDiv.appendChild(details);
+  return phaseDiv;
+}
+
+/* =====================================================
+   NOTES FUNCTIONS
+   ===================================================== */
+function toggleNoteArea(phaseId, btn) {
+  const wrap = document.getElementById('note-area-' + phaseId);
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? 'নোট লেখো ▾' : 'লুকাও ▲';
+  if (!isOpen) {
+    const ta = document.getElementById('note-txt-' + phaseId);
+    if (ta && !ta._loaded) {
+      ta.value = bbGetNote(phaseId);
+      ta._loaded = true;
+    }
+  }
+}
+
+function onNoteInput(phaseId) {
+  const st = document.getElementById('note-status-' + phaseId);
+  if (st) st.textContent = '● পরিবর্তিত…';
+  const ta = document.getElementById('note-txt-' + phaseId);
+  clearTimeout(ta._autoSave);
+  ta._autoSave = setTimeout(() => saveNote(phaseId), 2500);
+}
+
+function saveNote(phaseId) {
+  const ta = document.getElementById('note-txt-' + phaseId);
+  if (!ta) return;
+  bbSetNote(phaseId, ta.value);
+  const st = document.getElementById('note-status-' + phaseId);
+  if (st) { st.textContent = '✓ সেভ হয়েছে'; setTimeout(()=>{ st.textContent = '—'; }, 3000); }
+}
+
+/* =====================================================
+   INIT & RENDER
+   ===================================================== */
+async function init() {
+  const result = await bbInitPage();
+  _shareMode = result.shareMode;
+
+  /* Share mode UI */
+  if (_shareMode) {
+    document.getElementById('shareBanner').style.display = 'flex';
+    document.getElementById('ghSetupBtn').style.display  = 'none';
+    document.getElementById('shareBtn').style.display    = 'none';
+    document.getElementById('resetBtn').style.display    = 'none';
+    document.getElementById('bbSyncBadge').style.display = 'none';
+  }
+
+  /* Build phase cards */
+  ROADMAP.forEach((phase, idx) => {
+    timeline.appendChild(buildPhaseCard(phase, idx === 0));
+  });
+
+  /* Attach checkbox listeners — main checklist */
+  const state = bbLoadProgress();
+  document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
+    cb.checked = bbIsChecked(state, cb.dataset.id);
+    if (!_shareMode) {
+      cb.addEventListener('change', () => {
+        bbSetChecked(bbLoadProgress(), cb.dataset.id, cb.checked);
+        render();
+      });
+    }
+  });
+
+  /* Share mode: fill note view */
+  if (_shareMode) {
+    ROADMAP.forEach(phase => {
+      const noteEl = document.getElementById('note-view-' + phase.id);
+      if (noteEl) {
+        const txt = bbGetNote(phase.id);
+        if (txt) {
+          noteEl.textContent = txt;
+          noteEl.style.display = 'block';
+        } else {
+          noteEl.parentElement.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  render();
+
+  /* GitHub state in modal */
+  refreshGHModalState();
+
+  /* Real-time cross-device sync */
+  if (!result.shareMode) {
+    bbStartPolling(15000);
+    window.addEventListener('bb:remoteUpdate', () => {
+      const state = bbLoadProgress();
+      document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
+        cb.checked = bbIsChecked(state, cb.dataset.id);
+      });
+      ROADMAP.forEach(phase => {
+        const ta = document.getElementById('note-txt-' + phase.id);
+        if (ta) {
+          ta.value = bbGetNote(phase.id);
+          ta._loaded = true;
+        }
+      });
+      render();
+    });
+  }
+}
+
+function render() {
+  const s = bbComputeStats();
+
+  ROADMAP.forEach(phase => {
+    const p = s.perPhase[phase.id];
+    const fillEl = document.getElementById('fill-' + phase.id);
+    const pctEl  = document.getElementById('pct-'  + phase.id);
+    if (fillEl) fillEl.style.width = p.pct + '%';
+    if (pctEl)  pctEl.textContent  = p.pct + '%';
+
+    const nodeEl = document.getElementById('node-' + phase.id);
+    if (nodeEl) {
+      nodeEl.classList.remove('active','complete');
+      if (p.pct === 100) nodeEl.classList.add('complete');
+      else if (p.pct > 0) nodeEl.classList.add('active');
+    }
+
+    /* Practice badges */
+    const qb = document.getElementById('qbadge-' + phase.id);
+    const pb = document.getElementById('pbadge-' + phase.id);
+    if (qb) qb.textContent = p.qDone + '/' + p.qTotal;
+    if (pb) pb.textContent = p.pDone + '/' + p.pTotal;
+
+    const pp = document.getElementById('pr-prog-' + phase.id);
+    if (pp) pp.textContent = `প্রশ্ন ${p.qDone}/${p.qTotal} | প্রজেক্ট ${p.pDone}/${p.pTotal}`;
+  });
+
+  EXTRAS.forEach(ex => {
+    const e = s.perExtra[ex.id];
+    const fillEl = document.getElementById('fill-' + ex.id);
+    const pctEl  = document.getElementById('pct-'  + ex.id);
+    if (fillEl) fillEl.style.width = e.pct + '%';
+    if (pctEl)  pctEl.textContent  = e.pct + '%';
+  });
+
+  document.getElementById('progressFill').style.width  = s.overallPct + '%';
+  document.getElementById('progressOut').textContent   = s.overallPct + '%';
+  document.getElementById('countOut').textContent      = s.totalChecked + ' / ' + s.totalAll;
+  document.getElementById('levelOut').textContent      = s.level;
+  document.getElementById('etaOut').textContent        = s.etaMonths + ' মাস';
+}
+
+function resetAll() {
+  if (!confirm('তুমি কি নিশ্চিত? সম্পূর্ণ progress ও notes ০%-এ ফিরে যাবে।')) return;
+  bbResetProgress();
+  document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => cb.checked = false);
+  ROADMAP.forEach(phase => {
+    const ta = document.getElementById('note-txt-' + phase.id);
+    if (ta) { ta.value = ''; ta._loaded = false; }
+    const st = document.getElementById('note-status-' + phase.id);
+    if (st) st.textContent = '—';
+  });
+  render();
+}
+
+/* =====================================================
+   GITHUB MODAL
+   ===================================================== */
+function openGHModal() {
+  document.getElementById('ghModalOverlay').style.display = 'block';
+  document.getElementById('ghModal').style.display = 'block';
+  refreshGHModalState();
+}
+function closeGHModal() {
+  document.getElementById('ghModalOverlay').style.display = 'none';
+  document.getElementById('ghModal').style.display = 'none';
+}
+
+function refreshGHModalState() {
+  const gistId = bbGetGistId();
+  const token  = bbGetToken();
+  const connectedBox = document.getElementById('ghConnectedInfo');
+  const shareBox     = document.getElementById('ghShareBox');
+  const tokenInput   = document.getElementById('ghTokenInput');
+
+  if (gistId && token) {
+    if (connectedBox) {
+      connectedBox.style.display = 'flex';
+      const gistIdTxt = document.getElementById('ghGistIdTxt');
+      const gistLink  = document.getElementById('ghGistLink');
+      if (gistIdTxt) gistIdTxt.textContent = gistId;
+      if (gistLink)  gistLink.href = 'https://gist.github.com/' + gistId;
+    }
+    if (shareBox) {
+      shareBox.style.display = 'block';
+      const shareVal = document.getElementById('shareLinkVal');
+      if (shareVal) shareVal.value = window.location.origin + window.location.pathname + '?share=' + gistId;
+    }
+    if (tokenInput) tokenInput.placeholder = '● সংযুক্ত আছে (বদলাতে নতুন token দাও)';
+  } else {
+    if (connectedBox) connectedBox.style.display = 'none';
+    if (shareBox)     shareBox.style.display = 'none';
+  }
+}
+
+async function connectGitHub() {
+  const tokenEl  = document.getElementById('ghTokenInput');
+  const statusEl = document.getElementById('ghConnectStatus');
+  const token = tokenEl ? tokenEl.value.trim() : '';
+  if (!token) { showStatus(statusEl, '⚠ Token খালি। উপরের লিংক থেকে token তৈরি করো।', 'error'); return; }
+
+  showStatus(statusEl, '⏳ Gist তৈরি হচ্ছে…', 'info');
+
+  // Encrypt token with password before saving — works across all browsers
+  await bbSaveToken(token, BB_PASSWORD);
+
+  /* Force a save to create/verify gist */
+  const r = await _ghSave();
+  if (r.ok) {
+    const gistId = bbGetGistId();
+    showStatus(statusEl, '✓ সংযুক্ত হয়েছে! Gist ID: ' + gistId + '<br><small style="color:#94a3b8">💡 এখন data.js-এ BB_GIST_ID = "' + gistId + '" বসাও — তাহলে নতুন browser-এ শুধু password দিলেই sync কাজ করবে।</small>', 'success');
+    _bbSetSyncUI('synced');
+    refreshGHModalState();
+  } else {
+    showStatus(statusEl, '✗ ব্যর্থ: ' + r.msg + ' — Token-এর gist scope আছে কিনা দেখো।', 'error');
+    _bbSetSyncUI('error', r.msg);
+  }
+}
+
+function disconnectGitHub() {
+  if (!confirm('GitHub disconnect করবে? Local data থাকবে, কিন্তু sync বন্ধ হবে।')) return;
+  localStorage.removeItem(BB_KEY_ENC_TOKEN);
+  localStorage.removeItem(BB_KEY_GIST_ID_LS);
+  refreshGHModalState();
+  _bbSetSyncUI('idle');
+  closeGHModal();
+}
+
+function copyShareLink() {
+  const el = document.getElementById('shareLinkVal');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = document.getElementById('copyLinkBtn');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
+  });
+}
+
+function showStatus(el, msg, type) {
+  if (!el) return;
+  el.innerHTML = msg;   // supports HTML hints like Gist ID display
+  el.style.display = 'block';
+  el.className = 'gh-status-msg gh-status-' + type;
+}
+
+/* =====================================================
+   SHARE MODAL
+   ===================================================== */
+function openShareModal() {
+  document.getElementById('shareModalOverlay').style.display = 'block';
+  document.getElementById('shareModal').style.display = 'block';
+  const gistId = bbGetGistId();
+  if (gistId) {
+    document.getElementById('shareModalContent').style.display = 'block';
+    document.getElementById('shareModalNoGH').style.display = 'none';
+    const linkEl = document.getElementById('shareModalLink');
+    if (linkEl) linkEl.value = window.location.origin + window.location.pathname + '?share=' + gistId;
+  } else {
+    document.getElementById('shareModalContent').style.display = 'none';
+    document.getElementById('shareModalNoGH').style.display = 'block';
+  }
+}
+function closeShareModal() {
+  document.getElementById('shareModalOverlay').style.display = 'none';
+  document.getElementById('shareModal').style.display = 'none';
+}
+function copyShareLinkFromModal() {
+  const el = document.getElementById('shareModalLink');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = document.getElementById('copyModalLinkBtn');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
+  });
+}
+function copyCurrentUrl() {
+  navigator.clipboard.writeText(window.location.href).then(() => alert('লিংক কপি হয়েছে!'));
+}
+
+/* =====================================================
+   BOOT
+   ===================================================== */
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
