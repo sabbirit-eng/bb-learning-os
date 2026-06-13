@@ -221,18 +221,7 @@ function resetAll(){
 
 async function init() {
   const result = await bbInitPage();
-  if (result.shareMode) {
-    const resetBtn = document.querySelector('.reset-btn');
-    if (resetBtn) resetBtn.style.display = 'none';
-    const ghBtn = document.getElementById('ghSetupBtn');
-    if (ghBtn) ghBtn.style.display = 'none';
-    const shareBtn = document.getElementById('shareBtn');
-    if (shareBtn) shareBtn.style.display = 'none';
-    const banner = document.createElement('div');
-    banner.style.cssText = 'background:#1e293b;color:#94a3b8;text-align:center;padding:8px;font-size:12px;letter-spacing:0.5px;';
-    banner.textContent = '👁 VIEW ONLY — শেয়ার লিংকে এসেছো, কোনো পরিবর্তন সেভ হবে না';
-    document.body.insertBefore(banner, document.body.firstChild);
-  }
+  // share mode: looks normal, no saving
   render();
   /* Real-time cross-device sync */
   if (!result.shareMode) {

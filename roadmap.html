@@ -157,15 +157,15 @@ function buildPracticeSection(phase) {
   if (!pr || (pr.questions.length === 0 && pr.projects.length === 0)) return '';
 
   const qItems = pr.questions.map((q, i) => `
-    <label class="pq-item ${_shareMode ? 'pq-readonly' : ''}">
-      <input type="checkbox" data-id="${phase.id}-q${i}" class="pq-check" ${_shareMode ? 'disabled' : ''}>
+    <label class="pq-item">
+      <input type="checkbox" data-id="${phase.id}-q${i}" class="pq-check">
       <span class="box"></span>
       <span class="pq-text"><strong>${i+1}.</strong> ${q}</span>
     </label>`).join('');
 
   const pItems = pr.projects.map((p, i) => `
-    <label class="pq-item ${_shareMode ? 'pq-readonly' : ''}">
-      <input type="checkbox" data-id="${phase.id}-proj${i}" class="pq-check" ${_shareMode ? 'disabled' : ''}>
+    <label class="pq-item">
+      <input type="checkbox" data-id="${phase.id}-proj${i}" class="pq-check">
       <span class="box"></span>
       <span class="pq-text"><strong>প্রজেক্ট ${i+1}:</strong> ${p}</span>
     </label>`).join('');
@@ -330,8 +330,7 @@ function buildPhaseCard(phase, openFirst) {
     const id = phase.id + '-i' + i;
     const label = document.createElement('label');
     label.className = 'check';
-    if (_shareMode) label.classList.add('check-readonly');
-    label.innerHTML = `<input type="checkbox" data-id="${id}" ${_shareMode ? 'disabled' : ''}><span class="box"></span><span class="label-text">${name}</span>`;
+    label.innerHTML = `<input type="checkbox" data-id="${id}"><span class="box"></span><span class="label-text">${name}</span>`;
     grid.appendChild(label);
   });
 
@@ -343,8 +342,7 @@ function buildPhaseCard(phase, openFirst) {
       const id = ex.id + '-i' + i;
       const label = document.createElement('label');
       label.className = 'check';
-      if (_shareMode) label.classList.add('check-readonly');
-      label.innerHTML = `<input type="checkbox" data-id="${id}" ${_shareMode ? 'disabled' : ''}><span class="box"></span><span class="label-text">${name}</span>`;
+      label.innerHTML = `<input type="checkbox" data-id="${id}"><span class="box"></span><span class="label-text">${name}</span>`;
       exGrid.appendChild(label);
     });
   });
@@ -395,13 +393,7 @@ async function init() {
   _shareMode = result.shareMode;
 
   /* Share mode UI */
-  if (_shareMode) {
-    document.getElementById('shareBanner').style.display = 'flex';
-    document.getElementById('ghSetupBtn').style.display  = 'none';
-    document.getElementById('shareBtn').style.display    = 'none';
-    document.getElementById('resetBtn').style.display    = 'none';
-    document.getElementById('bbSyncBadge').style.display = 'none';
-  }
+  // share mode: UI looks normal, just no saving
 
   /* Build phase cards */
   ROADMAP.forEach((phase, idx) => {
@@ -420,21 +412,7 @@ async function init() {
     }
   });
 
-  /* Share mode: fill note view */
-  if (_shareMode) {
-    ROADMAP.forEach(phase => {
-      const noteEl = document.getElementById('note-view-' + phase.id);
-      if (noteEl) {
-        const txt = bbGetNote(phase.id);
-        if (txt) {
-          noteEl.textContent = txt;
-          noteEl.style.display = 'block';
-        } else {
-          noteEl.parentElement.style.display = 'none';
-        }
-      }
-    });
-  }
+
 
   render();
 
