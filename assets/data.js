@@ -600,7 +600,7 @@ const MODULES = [
    ✅ নতুন browser-এ শুধু password "businessbrain2030" দাও — সব কাজ করবে
    ═══════════════════════════════════════════════════════════════════════════ */
 const BB_PASSWORD  = "businessbrain2030";
-const BB_GIST_ID   = "29a19b536188344e221613eca9d2b5e9";
+const BB_GIST_ID   = "ebef5449fbebe63a37c7a622bbf54378";
 // Token encrypted with BB_PASSWORD via AES-GCM (safe to hardcode in source)
 const BB_ENC_TOKEN_HARDCODED = "UdfIxYJuf02vwRZc.j3LpYWYcI4D5+jjGYfJS+4/3H6piBmYPFu4fesDcJo+jgnQ6PXJUqUJPDpZ5Zu48ksYohzzz3MU=";
 
@@ -882,7 +882,8 @@ async function bbInitPage() {
   const shareId = new URLSearchParams(window.location.search).get("share");
   if (shareId) {
     _bbShareMode = true;
-    const data = await _ghFetch(shareId);
+    // Use unauthenticated fetch — viewer has no token, gist is public
+    const data = await _preFetchGist(shareId);
     if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; }
     bbFixNavLinks();
     return { shareMode: true };
