@@ -600,7 +600,7 @@ const MODULES = [
    ✅ নতুন browser-এ শুধু password "businessbrain2030" দাও — সব কাজ করবে
    ═══════════════════════════════════════════════════════════════════════════ */
 const BB_PASSWORD  = "businessbrain2030";
-const BB_GIST_ID   = "02a98ba94bc0c97fcfb61dac03c9312d";
+const BB_GIST_ID   = "29a19b536188344e221613eca9d2b5e9";
 // Token encrypted with BB_PASSWORD via AES-GCM (safe to hardcode in source)
 const BB_ENC_TOKEN_HARDCODED = "UdfIxYJuf02vwRZc.j3LpYWYcI4D5+jjGYfJS+4/3H6piBmYPFu4fesDcJo+jgnQ6PXJUqUJPDpZ5Zu48ksYohzzz3MU=";
 
