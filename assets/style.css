@@ -159,7 +159,7 @@ section{ padding:44px 0; }
 .timeline{ position:relative; padding-left:72px; }
 .phase{ position:relative; margin-bottom:18px; }
 .phase::before{
-  content:''; position:absolute; left:26px; top:48px; bottom:-18px; width:2px; background:var(--border);
+  content:''; position:absolute; left:-33px; top:48px; bottom:-18px; width:2px; background:var(--border);
 }
 .phase:last-child::before{ display:none; }
 .phase-node{
@@ -493,7 +493,7 @@ footer .brand-dot{ display:inline-block; vertical-align:-1px; margin-right:6px; 
   .page-links{ display:flex; overflow-x:auto; }
   .timeline{ padding-left:52px; }
   .phase-node{ width:34px; height:34px; font-size:11px; left:-42px; }
-  .phase::before{ left:18px; top:38px; }
+  .phase::before{ left:-26px; top:38px; }
   .phase-card summary{ flex-wrap:wrap; }
   .mini-progress{ width:60px; }
   .mockup-body{ grid-template-columns:1fr; }
