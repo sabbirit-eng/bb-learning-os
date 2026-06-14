@@ -729,3 +729,198 @@ footer .brand-dot{ display:inline-block; vertical-align:-1px; margin-right:6px; 
 .check-readonly{cursor:default;opacity:.8;}
 .check-readonly input{cursor:default;}
 
+
+/* ============================================================
+   NOTION SECTION
+   ============================================================ */
+.notion-section {
+  margin: 12px 0 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.notion-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  gap: 10px;
+}
+.notion-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a78bfa;
+  letter-spacing: .4px;
+}
+.notion-toggle-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #a78bfa44;
+  background: #a78bfa18;
+  color: #a78bfa;
+  cursor: pointer;
+  transition: background .15s;
+}
+.notion-toggle-btn:hover { background: #a78bfa30; }
+.notion-area-wrap { padding: 0 14px 12px; }
+.notion-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.notion-url-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+.notion-url-input:focus { border-color: #a78bfa; }
+.notion-open-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #a78bfa;
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: opacity .15s;
+}
+.notion-open-btn:hover { opacity: .85; }
+.notion-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.notion-status { font-size: 11px; color: var(--muted); }
+.notion-save-btn {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.notion-save-btn:hover { background: var(--border); }
+
+/* ============================================================
+   TIME TRACKER SECTION
+   ============================================================ */
+.time-section {
+  margin: 12px 0 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.time-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  gap: 10px;
+}
+.time-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #34d399;
+  letter-spacing: .4px;
+}
+.time-total-badge {
+  font-size: 11px;
+  background: #34d39922;
+  border: 1px solid #34d39944;
+  color: #34d399;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.time-body { padding: 0 14px 14px; }
+.time-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.time-start-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid #34d39955;
+  background: #34d39918;
+  color: #34d399;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.time-start-btn:hover { background: #34d39930; }
+.time-start-btn.running {
+  background: #f8717130;
+  border-color: #f8717155;
+  color: #f87171;
+}
+.time-display {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 2px;
+  min-width: 80px;
+}
+.time-manual-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.time-manual-input {
+  width: 70px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+.time-manual-input:focus { border-color: #34d399; }
+.time-add-btn {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.time-add-btn:hover { background: var(--border); }
+.time-log-preview { margin-top: 10px; }
+.tl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}

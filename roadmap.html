@@ -201,15 +201,6 @@ function buildPracticeSection(phase) {
 
 /* --- Notes section --- */
 function buildNotesSection(phase) {
-  if (_shareMode) {
-    return `
-      <div class="notes-section">
-        <div class="notes-header-row">
-          <span class="notes-badge">📝 নোট — Phase ${phase.num}</span>
-        </div>
-        <div class="notes-view-text" id="note-view-${phase.id}"></div>
-      </div>`;
-  }
   return `
     <div class="notes-section">
       <div class="notes-header-row">
@@ -228,6 +219,51 @@ function buildNotesSection(phase) {
           <span class="notes-status" id="note-status-${phase.id}">—</span>
           <button class="notes-save-btn" onclick="saveNote('${phase.id}')">💾 সেভ করো</button>
         </div>
+      </div>
+    </div>`;
+}
+
+/* --- Notion link section --- */
+function buildNotionSection(phase) {
+  return `
+    <div class="notion-section">
+      <div class="notion-header-row">
+        <span class="notion-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933z"/></svg> Notion পেজ — Phase ${phase.num}</span>
+        <button class="notion-toggle-btn" onclick="toggleNotionArea('${phase.id}', this)">লিংক যোগ করো ▾</button>
+      </div>
+      <div class="notion-area-wrap" id="notion-area-${phase.id}" style="display:none;">
+        <div class="notion-input-row">
+          <input type="url" class="notion-url-input" id="notion-url-${phase.id}"
+            placeholder="https://www.notion.so/your-page-link"
+            oninput="onNotionInput('${phase.id}')">
+          <button class="notion-open-btn" id="notion-open-${phase.id}" onclick="openNotion('${phase.id}')" style="display:none;">↗ খুলো</button>
+        </div>
+        <div class="notion-footer-row">
+          <span class="notion-status" id="notion-status-${phase.id}">—</span>
+          <button class="notion-save-btn" onclick="saveNotion('${phase.id}')">💾 সেভ</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* --- Time Tracker section --- */
+function buildTimeSection(phase) {
+  return `
+    <div class="time-section">
+      <div class="time-header-row">
+        <span class="time-badge">⏱ সময় ট্র্যাকার — Phase ${phase.num}</span>
+        <span class="time-total-badge" id="time-total-${phase.id}">মোট: 0 মিনিট</span>
+      </div>
+      <div class="time-body">
+        <div class="time-timer-row">
+          <button class="time-start-btn" id="timer-btn-${phase.id}" onclick="toggleTimer('${phase.id}')">▶ শুরু করো</button>
+          <span class="time-display" id="timer-display-${phase.id}">00:00:00</span>
+          <div class="time-manual-row">
+            <input type="number" class="time-manual-input" id="time-manual-${phase.id}" min="1" max="999" placeholder="মিনিট">
+            <button class="time-add-btn" onclick="addManualTime('${phase.id}')">+ যোগ করো</button>
+          </div>
+        </div>
+        <div class="time-log-preview" id="time-log-${phase.id}"></div>
       </div>
     </div>`;
 }
@@ -313,6 +349,8 @@ function buildPhaseCard(phase, openFirst) {
 
       ${buildPracticeSection(phase)}
       ${buildNotesSection(phase)}
+      ${buildNotionSection(phase)}
+      ${buildTimeSection(phase)}
 
       <div class="build-box">
         <span class="label">এই ফেইজ ১০০% হলে BusinessBrain AI-তে বানাবে →
@@ -386,6 +424,285 @@ function saveNote(phaseId) {
 }
 
 /* =====================================================
+   NOTION FUNCTIONS
+   ===================================================== */
+function toggleNotionArea(phaseId, btn) {
+  const wrap = document.getElementById('notion-area-' + phaseId);
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? 'লিংক যোগ করো ▾' : 'লুকাও ▲';
+  if (!isOpen) {
+    const inp = document.getElementById('notion-url-' + phaseId);
+    if (inp && !inp._loaded) {
+      inp.value = bbGetNotion(phaseId);
+      inp._loaded = true;
+      updateNotionOpenBtn(phaseId);
+    }
+  }
+}
+
+function onNotionInput(phaseId) {
+  const st = document.getElementById('notion-status-' + phaseId);
+  if (st) st.textContent = '● পরিবর্তিত…';
+  updateNotionOpenBtn(phaseId);
+  const inp = document.getElementById('notion-url-' + phaseId);
+  clearTimeout(inp._autoSave);
+  inp._autoSave = setTimeout(() => saveNotion(phaseId), 2000);
+}
+
+function updateNotionOpenBtn(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  const btn = document.getElementById('notion-open-' + phaseId);
+  if (!inp || !btn) return;
+  btn.style.display = inp.value.trim() ? 'inline-flex' : 'none';
+}
+
+function saveNotion(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  if (!inp) return;
+  bbSetNotion(phaseId, inp.value);
+  inp._loaded = true;
+  const st = document.getElementById('notion-status-' + phaseId);
+  if (st) { st.textContent = '✓ সেভ হয়েছে'; setTimeout(() => { st.textContent = '—'; }, 3000); }
+  updateNotionOpenBtn(phaseId);
+}
+
+function openNotion(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  const url = inp ? inp.value.trim() : bbGetNotion(phaseId);
+  if (url) window.open(url, '_blank', 'noopener');
+}
+
+function refreshNotionLinks() {
+  ROADMAP.forEach(phase => {
+    const inp = document.getElementById('notion-url-' + phase.id);
+    if (inp) {
+      inp.value = bbGetNotion(phase.id);
+      inp._loaded = true;
+      updateNotionOpenBtn(phase.id);
+    }
+    // update time totals too
+    refreshTimeBadge(phase.id);
+  });
+}
+
+/* =====================================================
+   TIME TRACKER FUNCTIONS
+   ===================================================== */
+const _timers = {};   // { phaseId: { start: Date, interval: id } }
+
+function toggleTimer(phaseId) {
+  if (_timers[phaseId]) {
+    stopTimer(phaseId);
+  } else {
+    startTimer(phaseId);
+  }
+}
+
+function startTimer(phaseId) {
+  if (_timers[phaseId]) return;
+  const start = Date.now();
+  const btn = document.getElementById('timer-btn-' + phaseId);
+  if (btn) { btn.textContent = '⏸ থামাও'; btn.classList.add('running'); }
+  const interval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+    const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    const disp = document.getElementById('timer-display-' + phaseId);
+    if (disp) disp.textContent = h+':'+m+':'+s;
+  }, 1000);
+  _timers[phaseId] = { start, interval };
+}
+
+function stopTimer(phaseId) {
+  if (!_timers[phaseId]) return;
+  const { start, interval } = _timers[phaseId];
+  clearInterval(interval);
+  delete _timers[phaseId];
+  const elapsed = Math.floor((Date.now() - start) / 1000);
+  const mins = Math.max(1, Math.round(elapsed / 60));
+  bbLogTime(phaseId, mins);
+  const btn = document.getElementById('timer-btn-' + phaseId);
+  if (btn) { btn.textContent = '▶ শুরু করো'; btn.classList.remove('running'); }
+  const disp = document.getElementById('timer-display-' + phaseId);
+  if (disp) disp.textContent = '00:00:00';
+  refreshTimeBadge(phaseId);
+  renderTimeLog(phaseId);
+}
+
+function addManualTime(phaseId) {
+  const inp = document.getElementById('time-manual-' + phaseId);
+  if (!inp) return;
+  const mins = parseInt(inp.value);
+  if (!mins || mins < 1) return;
+  bbLogTime(phaseId, mins);
+  inp.value = '';
+  refreshTimeBadge(phaseId);
+  renderTimeLog(phaseId);
+}
+
+function refreshTimeBadge(phaseId) {
+  const stats = bbGetTimeStats();
+  const totalMins = stats.perPhase[phaseId] || 0;
+  const badge = document.getElementById('time-total-' + phaseId);
+  if (!badge) return;
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  badge.textContent = h > 0 ? \`মোট: \${h}ঘ \${m}মি\` : \`মোট: \${m} মিনিট\`;
+}
+
+function renderTimeLog(phaseId) {
+  const logEl = document.getElementById('time-log-' + phaseId);
+  if (!logEl) return;
+  const tl = bbLoadTimelog();
+  const days = Object.keys(tl).sort().reverse().slice(0, 7);
+  if (!days.length) { logEl.innerHTML = ''; return; }
+  const rows = days.map(day => {
+    const mins = tl[day][phaseId] || 0;
+    if (!mins) return '';
+    const h = Math.floor(mins/60), m = mins%60;
+    const timeStr = h > 0 ? \`\${h}ঘ \${m}মি\` : \`\${m}মি\`;
+    const d = new Date(day);
+    const label = d.toLocaleDateString('bn-BD', {month:'short', day:'numeric'});
+    return \`<span class="tl-chip">\${label}: \${timeStr}</span>\`;
+  }).filter(Boolean).join('');
+  logEl.innerHTML = rows ? \`<div class="tl-chips">\${rows}</div>\` : '';
+}
+
+function initAllTimeWidgets() {
+  ROADMAP.forEach(phase => {
+    refreshTimeBadge(phase.id);
+    renderTimeLog(phase.id);
+  });
+}
+
+/* =====================================================
+   NOTION FUNCTIONS
+   ===================================================== */
+function toggleNotionArea(phaseId, btn) {
+  const wrap = document.getElementById('notion-area-' + phaseId);
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? 'লিংক যোগ করো ▾' : 'লুকাও ▲';
+  if (!isOpen) {
+    const inp = document.getElementById('notion-url-' + phaseId);
+    if (inp && !inp._loaded) { inp.value = bbGetNotion(phaseId); inp._loaded = true; updateNotionOpenBtn(phaseId); }
+  }
+}
+function onNotionInput(phaseId) {
+  const st = document.getElementById('notion-status-' + phaseId);
+  if (st) st.textContent = '● পরিবর্তিত…';
+  updateNotionOpenBtn(phaseId);
+  const inp = document.getElementById('notion-url-' + phaseId);
+  clearTimeout(inp._autoSave);
+  inp._autoSave = setTimeout(() => saveNotion(phaseId), 2000);
+}
+function updateNotionOpenBtn(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  const btn = document.getElementById('notion-open-' + phaseId);
+  if (!inp || !btn) return;
+  btn.style.display = inp.value.trim() ? 'inline-flex' : 'none';
+}
+function saveNotion(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  if (!inp) return;
+  bbSetNotion(phaseId, inp.value);
+  inp._loaded = true;
+  const st = document.getElementById('notion-status-' + phaseId);
+  if (st) { st.textContent = '✓ সেভ হয়েছে'; setTimeout(() => { st.textContent = '—'; }, 3000); }
+  updateNotionOpenBtn(phaseId);
+}
+function openNotion(phaseId) {
+  const inp = document.getElementById('notion-url-' + phaseId);
+  const url = inp ? inp.value.trim() : bbGetNotion(phaseId);
+  if (url) window.open(url, '_blank', 'noopener');
+}
+function refreshNotionLinks() {
+  ROADMAP.forEach(phase => {
+    const inp = document.getElementById('notion-url-' + phase.id);
+    if (inp) { inp.value = bbGetNotion(phase.id); inp._loaded = true; updateNotionOpenBtn(phase.id); }
+  });
+}
+
+/* =====================================================
+   TIME TRACKER FUNCTIONS
+   ===================================================== */
+const _timers = {};
+
+function toggleTimer(phaseId) {
+  _timers[phaseId] ? stopTimer(phaseId) : startTimer(phaseId);
+}
+function startTimer(phaseId) {
+  if (_timers[phaseId]) return;
+  const start = Date.now();
+  const btn = document.getElementById('timer-btn-' + phaseId);
+  if (btn) { btn.textContent = '⏸ থামাও'; btn.classList.add('running'); }
+  const interval = setInterval(() => {
+    const el = Math.floor((Date.now() - start) / 1000);
+    const h = String(Math.floor(el/3600)).padStart(2,'0');
+    const m = String(Math.floor((el%3600)/60)).padStart(2,'0');
+    const s = String(el%60).padStart(2,'0');
+    const d = document.getElementById('timer-display-' + phaseId);
+    if (d) d.textContent = h+':'+m+':'+s;
+  }, 1000);
+  _timers[phaseId] = { start, interval };
+}
+function stopTimer(phaseId) {
+  if (!_timers[phaseId]) return;
+  const { start, interval } = _timers[phaseId];
+  clearInterval(interval);
+  delete _timers[phaseId];
+  const mins = Math.max(1, Math.round((Date.now() - start) / 60000));
+  bbLogTime(phaseId, mins);
+  const btn = document.getElementById('timer-btn-' + phaseId);
+  if (btn) { btn.textContent = '▶ শুরু করো'; btn.classList.remove('running'); }
+  const d = document.getElementById('timer-display-' + phaseId);
+  if (d) d.textContent = '00:00:00';
+  refreshTimeBadge(phaseId);
+  renderTimeLog(phaseId);
+}
+function addManualTime(phaseId) {
+  const inp = document.getElementById('time-manual-' + phaseId);
+  if (!inp) return;
+  const mins = parseInt(inp.value);
+  if (!mins || mins < 1) return;
+  bbLogTime(phaseId, mins);
+  inp.value = '';
+  refreshTimeBadge(phaseId);
+  renderTimeLog(phaseId);
+}
+function refreshTimeBadge(phaseId) {
+  const stats = bbGetTimeStats();
+  const totalMins = stats.perPhase[phaseId] || 0;
+  const badge = document.getElementById('time-total-' + phaseId);
+  if (!badge) return;
+  const h = Math.floor(totalMins / 60), m = totalMins % 60;
+  badge.textContent = h > 0 ? ('মোট: ' + h + 'ঘ ' + m + 'মি') : ('মোট: ' + m + ' মিনিট');
+}
+function renderTimeLog(phaseId) {
+  const logEl = document.getElementById('time-log-' + phaseId);
+  if (!logEl) return;
+  const tl = bbLoadTimelog();
+  const days = Object.keys(tl).sort().reverse().slice(0, 7);
+  const rows = days.map(day => {
+    const mins = (tl[day] && tl[day][phaseId]) || 0;
+    if (!mins) return '';
+    const h = Math.floor(mins/60), m = mins%60;
+    const timeStr = h > 0 ? (h + 'ঘ ' + m + 'মি') : (m + 'মি');
+    const d = new Date(day + 'T12:00:00');
+    const label = d.toLocaleDateString('bn-BD', {month:'short', day:'numeric'});
+    return '<span class="tl-chip">' + label + ': ' + timeStr + '</span>';
+  }).filter(Boolean).join('');
+  logEl.innerHTML = rows ? '<div class="tl-chips">' + rows + '</div>' : '';
+}
+function initAllTimeWidgets() {
+  ROADMAP.forEach(phase => { refreshTimeBadge(phase.id); renderTimeLog(phase.id); });
+}
+
+/* =====================================================
    INIT & RENDER
    ===================================================== */
 async function init() {
@@ -415,6 +732,8 @@ async function init() {
 
 
   render();
+  initAllTimeWidgets();
+  refreshNotionLinks();
 
   /* GitHub state in modal */
   refreshGHModalState();
@@ -435,6 +754,8 @@ async function init() {
         }
       });
       render();
+      initAllTimeWidgets();
+      refreshNotionLinks();
     });
   }
 }

@@ -610,9 +610,13 @@ const BB_KEY_NOTES      = "bb_notes_v3";
 const BB_KEY_ENC_TOKEN  = "bb_enc_token_v3";   // AES-GCM encrypted token (v3: updated token)
 const BB_KEY_GIST_ID_LS = "bb_gist_id_v3";
 const BB_KEY_SESSION    = "bb_session_v3";
+const BB_KEY_NOTION     = "bb_notion_v3";      // Notion page links per phase
+const BB_KEY_TIMELOG    = "bb_timelog_v3";     // Time tracker: { "2026-06-14": { p0: 45, p1: 30 } }
 
 let _bbState        = null;
 let _bbNotes        = null;
+let _bbNotion       = null;   // { phaseId: "https://notion.so/..." }
+let _bbTimelog      = null;   // { "YYYY-MM-DD": { phaseId: minutes } }
 let _bbShareMode    = false;
 let _syncTimer      = null;
 let _decryptedToken = null;   // in-memory only — never re-stored as plain text
@@ -754,6 +758,8 @@ async function _ghSave() {
     updatedAt: _savedAt,
     progress: _bbState || {},
     notes: _bbNotes || {},
+    notion: _bbNotion || {},
+    timelog: _bbTimelog || {},
     encToken: encToken
   }, null, 2);
   try {
@@ -793,6 +799,53 @@ function bbLoadProgress() {
 function bbLoadNotes() {
   if (_bbNotes === null) _bbNotes = _localGet(BB_KEY_NOTES) || {};
   return _bbNotes;
+}
+function bbLoadNotion() {
+  if (_bbNotion === null) _bbNotion = _localGet(BB_KEY_NOTION) || {};
+  return _bbNotion;
+}
+function bbGetNotion(phaseId) { return bbLoadNotion()[phaseId] || ''; }
+function bbSetNotion(phaseId, url) {
+  const n = bbLoadNotion();
+  if (url && url.trim()) n[phaseId] = url.trim();
+  else delete n[phaseId];
+  _bbNotion = n;
+  _localSet(BB_KEY_NOTION, _bbNotion);
+  bbScheduleSync();
+}
+function bbLoadTimelog() {
+  if (_bbTimelog === null) _bbTimelog = _localGet(BB_KEY_TIMELOG) || {};
+  return _bbTimelog;
+}
+function bbGetTodayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function bbLogTime(phaseId, minutes) {
+  const tl = bbLoadTimelog();
+  const day = bbGetTodayKey();
+  if (!tl[day]) tl[day] = {};
+  tl[day][phaseId] = (tl[day][phaseId] || 0) + minutes;
+  _bbTimelog = tl;
+  _localSet(BB_KEY_TIMELOG, _bbTimelog);
+  bbScheduleSync();
+}
+function bbGetTimeStats() {
+  const tl = bbLoadTimelog();
+  const days = Object.keys(tl).sort();
+  let totalMins = 0;
+  const perDay = {};
+  const perPhase = {};
+  days.forEach(day => {
+    let dayTotal = 0;
+    Object.entries(tl[day]).forEach(([ph, m]) => {
+      dayTotal += m;
+      totalMins += m;
+      perPhase[ph] = (perPhase[ph] || 0) + m;
+    });
+    perDay[day] = dayTotal;
+  });
+  return { totalMins, perDay, perPhase, days };
 }
 function bbIsChecked(state, id) { return !!state[id]; }
 
@@ -848,10 +901,14 @@ async function _pollGist() {
     // Remote is newer → update local state and notify page
     if (data.updatedAt !== _lastKnownAt) {
       _lastKnownAt = data.updatedAt;
-      _bbState = data.progress || {};
-      _bbNotes = data.notes   || {};
+      _bbState   = data.progress || {};
+      _bbNotes   = data.notes    || {};
+      _bbNotion  = data.notion   || {};
+      _bbTimelog = data.timelog  || {};
       _localSet(BB_KEY_PROGRESS, _bbState);
       _localSet(BB_KEY_NOTES,    _bbNotes);
+      _localSet(BB_KEY_NOTION,   _bbNotion);
+      _localSet(BB_KEY_TIMELOG,  _bbTimelog);
       _bbSetSyncUI('synced');
       window.dispatchEvent(new CustomEvent('bb:remoteUpdate'));
     }
@@ -897,7 +954,7 @@ async function bbInitPage() {
     if (!data && gistToLoad !== BB_GIST_ID) {
       data = await _preFetchGist(BB_GIST_ID);
     }
-    if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; }
+    if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; _bbNotion = data.notion || {}; _bbTimelog = data.timelog || {}; }
     bbFixNavLinks();
     return { shareMode: true };
   }
@@ -917,10 +974,14 @@ async function bbInitPage() {
 
   // 4. Load data: prefer Gist data (already fetched), fallback to localStorage
   if (gistData && (gistData.progress || gistData.notes)) {
-    _bbState = gistData.progress || {};
-    _bbNotes = gistData.notes   || {};
+    _bbState   = gistData.progress || {};
+    _bbNotes   = gistData.notes    || {};
+    _bbNotion  = gistData.notion   || {};
+    _bbTimelog = gistData.timelog  || {};
     _localSet(BB_KEY_PROGRESS, _bbState);
-    _localSet(BB_KEY_NOTES,   _bbNotes);
+    _localSet(BB_KEY_NOTES,    _bbNotes);
+    _localSet(BB_KEY_NOTION,   _bbNotion);
+    _localSet(BB_KEY_TIMELOG,  _bbTimelog);
     _bbSetSyncUI(bbGetToken() ? "synced" : "idle");
   } else if (gistId && bbGetToken()) {
     // Pre-fetch failed (rate limit?) — retry with auth token
