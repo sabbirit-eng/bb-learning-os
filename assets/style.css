@@ -156,14 +156,14 @@ section{ padding:44px 0; }
 .rule-card p{ margin:0; font-size:14.5px; }
 
 /* ---------- TIMELINE / SPINE ---------- */
-.timeline{ position:relative; padding-left:64px; }
+.timeline{ position:relative; padding-left:72px; }
 .phase{ position:relative; margin-bottom:18px; }
 .phase::before{
-  content:''; position:absolute; left:21px; top:46px; bottom:-18px; width:2px; background:var(--border);
+  content:''; position:absolute; left:26px; top:48px; bottom:-18px; width:2px; background:var(--border);
 }
 .phase:last-child::before{ display:none; }
 .phase-node{
-  position:absolute; left:-2px; top:0; width:44px; height:44px;
+  position:absolute; left:-54px; top:0; width:44px; height:44px;
   border-radius:50%; background:var(--surface-2); border:2px solid var(--border);
   display:flex; align-items:center; justify-content:center;
   font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
@@ -491,9 +491,9 @@ footer .brand-dot{ display:inline-block; vertical-align:-1px; margin-right:6px; 
   .hero h1{ font-size:30px; }
   .evo-grid{ grid-template-columns:1fr; }
   .page-links{ display:flex; overflow-x:auto; }
-  .timeline{ padding-left:46px; }
-  .phase-node{ width:34px; height:34px; font-size:11px; left:-1px; }
-  .phase::before{ left:16px; top:38px; }
+  .timeline{ padding-left:52px; }
+  .phase-node{ width:34px; height:34px; font-size:11px; left:-42px; }
+  .phase::before{ left:18px; top:38px; }
   .phase-card summary{ flex-wrap:wrap; }
   .mini-progress{ width:60px; }
   .mockup-body{ grid-template-columns:1fr; }
