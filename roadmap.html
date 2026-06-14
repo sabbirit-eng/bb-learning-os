@@ -537,6 +537,11 @@ function addManualTime(phaseId) {
   if (!inp) return;
   const mins = parseInt(inp.value);
   if (!mins || mins < 1) return;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  const timeStr = h > 0 ? (h + ' ঘণ্টা ' + m + ' মিনিট') : (m + ' মিনিট');
+  const phase = ROADMAP.find(p => p.id === phaseId);
+  const phaseName = phase ? ('Phase ' + phase.num) : phaseId;
+  if (!confirm('⏱ ' + phaseName + '-এ ' + timeStr + ' যোগ করবে?\n\nনিশ্চিত হও যে এই সময়টা তুমি সত্যিই কাজ করেছিলে।')) return;
   bbLogTime(phaseId, mins);
   inp.value = '';
   refreshTimeBadge(phaseId);
