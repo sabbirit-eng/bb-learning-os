@@ -40,6 +40,48 @@
   </div>
 </header>
 
+<!-- ===================== DASHBOARD ===================== -->
+<section id="dashboard" style="padding:40px 0 32px; border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Live Dashboard</p>
+      <h2>তোমার লার্নিং ওভারভিউ</h2>
+    </div>
+
+    <!-- Metric cards -->
+    <div id="dbMetrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;"></div>
+
+    <!-- Phase progress + Recent sessions (two columns) -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:24px;">
+
+      <!-- Phase grid -->
+      <div>
+        <p class="section-tag" style="margin-bottom:12px;">Phase অগ্রগতি</p>
+        <div id="dbPhases" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      </div>
+
+      <!-- Recent sessions -->
+      <div>
+        <p class="section-tag" style="margin-bottom:12px;">সাম্প্রতিক সেশন</p>
+        <div id="dbSessions" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px 16px;"></div>
+      </div>
+    </div>
+
+    <!-- Activity heatmap -->
+    <div>
+      <p class="section-tag" style="margin-bottom:12px;">অ্যাক্টিভিটি — গত ১২ সপ্তাহ</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;">
+        <div id="dbHeatmap" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted);">
+          কম
+          <span id="dbHeatLegend" style="display:flex;gap:3px;"></span>
+          বেশি
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="pages">
   <div class="wrap">
     <div class="section-head">
@@ -285,6 +327,127 @@ function render(){
   document.getElementById('countOut').textContent = s.totalChecked + ' / ' + s.totalAll;
   document.getElementById('levelOut').textContent = s.level;
   document.getElementById('etaOut').textContent = s.etaMonths + ' মাস';
+  renderDashboard(s);
+}
+
+function renderDashboard(s) {
+  /* ── Metric cards ── */
+  const sessions = bbGetSessions(200);
+  const totalMins = sessions.reduce(function(a,b){ return a + (b.mins||0); }, 0);
+  const totalHrs = Math.round(totalMins / 60 * 10) / 10;
+  const todayStr = new Date().toISOString().slice(0,10);
+  const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().slice(0,10);
+  const weekMins = sessions.filter(function(s){ return s.ts && s.ts.slice(0,10) >= weekAgo; })
+                            .reduce(function(a,b){ return a + (b.mins||0); }, 0);
+  const weekHrs = Math.round(weekMins / 60 * 10) / 10;
+  const etaLabel = s.etaMonths >= 12
+    ? Math.floor(s.etaMonths/12) + ' বছর ' + (s.etaMonths%12 ? s.etaMonths%12+' মাস' : '')
+    : s.etaMonths + ' মাস';
+
+  document.getElementById('dbMetrics').innerHTML =
+    dbMetric('মোট সময়', totalHrs > 0 ? totalHrs+'h' : '0h', 'লার্নিং সেশন থেকে') +
+    dbMetric('সেশন', sessions.length, 'মোট লগ করা সেশন') +
+    dbMetric('অগ্রগতি', s.overallPct+'%', s.totalChecked+' / '+s.totalAll+' টাস্ক') +
+    dbMetric('সমাপ্তি ETA', etaLabel, 'আনুমানিক সময় বাকি');
+
+  /* ── Phase grid ── */
+  const phaseOrder = ['p0','p1','p11','p2','p3','p4','p5','p6','p7','p8','p9','p10'];
+  const phaseNums  = {'p0':'00','p1':'01','p11':'02','p2':'03','p3':'04','p4':'05','p5':'06','p6':'07','p7':'08','p8':'09','p9':'10','p10':'11'};
+  const phaseTitles = {
+    'p0':'Git & ওয়ার্কফ্লো','p1':'প্রোগ্রামিং ফাউন্ডেশন','p11':'সিস্টেম ডিজাইন',
+    'p2':'ব্যাকএন্ড','p3':'ডেটাবেস','p4':'ফ্রন্টএন্ড','p5':'ক্লাউড',
+    'p6':'AI ইঞ্জিনিয়ারিং','p7':'আর্কিটেক্চার','p8':'বিজনেস AI','p9':'সিকিউরিটি','p10':'MLOps'
+  };
+  let firstActive = true;
+  let phasesHtml = '';
+  phaseOrder.forEach(function(pid) {
+    const ph = s.perPhase[pid] || { pct:0, checked:0, total:0 };
+    const pct = ph.pct;
+    const isDone = pct >= 100;
+    const isActive = !isDone && pct > 0 && firstActive;
+    if (isActive) firstActive = false;
+    const accentCol = isDone ? 'var(--accent)' : isActive ? 'var(--warn)' : 'var(--border)';
+    const borderLeft = isDone ? '2px solid var(--accent)' : isActive ? '2px solid var(--warn)' : '1px solid var(--border)';
+    const badge = isDone
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(94,234,212,0.12);color:var(--accent);font-family:\'JetBrains Mono\',monospace;">✓ সম্পন্ন</span>'
+      : isActive
+        ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(251,191,119,0.12);color:var(--warn);font-family:\'JetBrains Mono\',monospace;">▶ চলছে</span>'
+        : '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);font-family:\'JetBrains Mono\',monospace;">○ বাকি</span>';
+    phasesHtml +=
+      '<div style="background:var(--surface);border-left:'+borderLeft+';border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:12px;padding:13px 14px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;">PHASE '+phaseNums[pid]+'</span>' +
+          badge +
+        '</div>' +
+        '<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;line-height:1.4;">'+phaseTitles[pid]+'</div>' +
+        '<div style="background:var(--surface-2);height:4px;border-radius:99px;overflow:hidden;border:1px solid var(--border);margin-bottom:7px;">' +
+          '<div style="height:100%;width:'+pct+'%;background:'+accentCol+';border-radius:99px;transition:width .4s;"></div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);">'+ph.checked+' / '+ph.total+' টাস্ক · '+pct+'%</div>' +
+      '</div>';
+  });
+  document.getElementById('dbPhases').innerHTML = phasesHtml;
+
+  /* ── Recent sessions ── */
+  const recent = sessions.slice(-5).reverse();
+  const phaseNameMap = {};
+  phaseOrder.forEach(function(pid){ phaseNameMap[pid] = 'Phase '+phaseNums[pid]+' — '+phaseTitles[pid]; });
+  let sessHtml = '';
+  if (!recent.length) {
+    sessHtml = '<p style="color:var(--muted);font-size:13px;padding:16px 0;text-align:center;">এখনও কোনো সেশন নেই।<br><a href="roadmap.html" style="color:var(--accent);">রোডম্যাপে যাও →</a></p>';
+  } else {
+    recent.forEach(function(sess) {
+      const mins = sess.mins || 0;
+      const hrs = mins >= 60 ? Math.floor(mins/60)+'ঘ '+(mins%60)+'মি' : mins+'মি';
+      const pname = phaseNameMap[sess.phaseId] || sess.phaseId;
+      const dateStr = sess.ts ? sess.ts.slice(0,10) : '';
+      const note = sess.note ? sess.note : '';
+      sessHtml +=
+        '<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">' +
+          '<div style="min-width:0;">' +
+            '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',monospace;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+pname+'</div>' +
+            '<div style="font-size:13px;color:var(--text);line-height:1.4;">'+(note || '<span style="color:var(--muted);">নোট ছাড়া</span>')+'</div>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0;">' +
+            '<div style="font-size:13px;font-weight:600;color:var(--accent);font-family:\'JetBrains Mono\',monospace;">'+hrs+'</div>' +
+            '<div style="font-size:10px;color:var(--muted);margin-top:2px;">'+dateStr+'</div>' +
+          '</div>' +
+        '</div>';
+    });
+  }
+  document.getElementById('dbSessions').innerHTML = sessHtml + '<div style="padding:10px 0;"><a href="tracking.html" style="font-size:12px;font-family:\'JetBrains Mono\',monospace;color:var(--accent);">সব সেশন দেখো →</a></div>';
+
+  /* ── Activity heatmap (12 weeks = 84 days) ── */
+  const dayMap = {};
+  sessions.forEach(function(sess) {
+    if (!sess.ts) return;
+    const d = sess.ts.slice(0,10);
+    dayMap[d] = (dayMap[d] || 0) + (sess.mins || 0);
+  });
+  const heatStops = ['rgba(94,234,212,0.12)','rgba(94,234,212,0.3)','rgba(94,234,212,0.6)','rgba(94,234,212,0.85)','var(--accent)'];
+  let heatHtml = '';
+  for (let i = 83; i >= 0; i--) {
+    const d = new Date(Date.now() - i*24*60*60*1000);
+    const key = d.toISOString().slice(0,10);
+    const m = dayMap[key] || 0;
+    const lvl = m === 0 ? 0 : m < 20 ? 1 : m < 45 ? 2 : m < 90 ? 3 : m < 150 ? 4 : 5;
+    const bg = lvl === 0 ? 'var(--surface-2)' : heatStops[Math.min(lvl-1,4)];
+    heatHtml += '<div title="'+key+' — '+m+' মিনিট" style="width:14px;height:14px;border-radius:3px;background:'+bg+';border:1px solid var(--border);flex-shrink:0;"></div>';
+  }
+  document.getElementById('dbHeatmap').innerHTML = heatHtml;
+  let legHtml = '';
+  ['var(--surface-2)'].concat(heatStops).forEach(function(c){
+    legHtml += '<span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:'+c+';border:1px solid var(--border);"></span>';
+  });
+  document.getElementById('dbHeatLegend').innerHTML = legHtml;
+}
+
+function dbMetric(label, val, sub) {
+  return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;">' +
+    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;">'+label+'</div>' +
+    '<div style="font-size:24px;font-weight:600;color:var(--accent);font-family:\'JetBrains Mono\',monospace;line-height:1;margin-bottom:5px;">'+val+'</div>' +
+    '<div style="font-size:12px;color:var(--muted);">'+sub+'</div>' +
+  '</div>';
 }
 function resetAll(){
   const sure = confirm('তুমি কি নিশ্চিত? "RESET ROADMAP" — এই কমান্ডে সম্পূর্ণ প্রোগ্রেস ০% এ ফিরে যাবে (সব পেজে)।');
