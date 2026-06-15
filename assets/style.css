@@ -186,6 +186,14 @@ section{ padding:44px 0; }
 }
 .phase-title h3{ font-size:18px; }
 .phase-meta{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+.phase-notion-link{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:7px;
+  background:#a78bfa18; border:1px solid #a78bfa44;
+  color:#a78bfa; font-size:12px; font-weight:600;
+  text-decoration:none; white-space:nowrap; transition:background .15s;
+}
+.phase-notion-link:hover{ background:#a78bfa30; }
 .mini-progress{ width:90px; height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden; border:1px solid var(--border); }
 .mini-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .4s ease; }
 .mini-pct{ font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--muted); min-width:38px; text-align:right; }
