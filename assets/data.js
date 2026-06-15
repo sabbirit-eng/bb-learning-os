@@ -762,6 +762,7 @@ async function _ghSave() {
     notes: _bbNotes || {},
     notion: _bbNotion || {},
     timelog: _bbTimelog || {},
+    sessions: _bbSessions || [],
     encToken: encToken
   }, null, 2);
   try {
@@ -859,6 +860,7 @@ function bbAddSession(phaseId, mins, note) {
   if (sessions.length > 200) sessions.splice(0, sessions.length - 200);
   _bbSessions = sessions;
   _localSet(BB_KEY_SESSIONS, _bbSessions);
+  bbScheduleSync();
 }
 function bbGetSessions(limit) {
   limit = limit || 20;
@@ -923,14 +925,16 @@ async function _pollGist() {
     // Remote is newer → update local state and notify page
     if (data.updatedAt !== _lastKnownAt) {
       _lastKnownAt = data.updatedAt;
-      _bbState   = data.progress || {};
-      _bbNotes   = data.notes    || {};
-      _bbNotion  = data.notion   || {};
-      _bbTimelog = data.timelog  || {};
+      _bbState    = data.progress || {};
+      _bbNotes    = data.notes    || {};
+      _bbNotion   = data.notion   || {};
+      _bbTimelog  = data.timelog  || {};
+      _bbSessions = data.sessions || [];
       _localSet(BB_KEY_PROGRESS, _bbState);
       _localSet(BB_KEY_NOTES,    _bbNotes);
       _localSet(BB_KEY_NOTION,   _bbNotion);
       _localSet(BB_KEY_TIMELOG,  _bbTimelog);
+      _localSet(BB_KEY_SESSIONS, _bbSessions);
       _bbSetSyncUI('synced');
       window.dispatchEvent(new CustomEvent('bb:remoteUpdate'));
     }
@@ -976,7 +980,7 @@ async function bbInitPage() {
     if (!data && gistToLoad !== BB_GIST_ID) {
       data = await _preFetchGist(BB_GIST_ID);
     }
-    if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; _bbNotion = data.notion || {}; _bbTimelog = data.timelog || {}; }
+    if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; _bbNotion = data.notion || {}; _bbTimelog = data.timelog || {}; _bbSessions = data.sessions || []; }
     bbFixNavLinks();
     return { shareMode: true };
   }
@@ -996,23 +1000,31 @@ async function bbInitPage() {
 
   // 4. Load data: prefer Gist data (already fetched), fallback to localStorage
   if (gistData && (gistData.progress || gistData.notes)) {
-    _bbState   = gistData.progress || {};
-    _bbNotes   = gistData.notes    || {};
-    _bbNotion  = gistData.notion   || {};
-    _bbTimelog = gistData.timelog  || {};
+    _bbState    = gistData.progress || {};
+    _bbNotes    = gistData.notes    || {};
+    _bbNotion   = gistData.notion   || {};
+    _bbTimelog  = gistData.timelog  || {};
+    _bbSessions = gistData.sessions || [];
     _localSet(BB_KEY_PROGRESS, _bbState);
     _localSet(BB_KEY_NOTES,    _bbNotes);
     _localSet(BB_KEY_NOTION,   _bbNotion);
     _localSet(BB_KEY_TIMELOG,  _bbTimelog);
+    _localSet(BB_KEY_SESSIONS, _bbSessions);
     _bbSetSyncUI(bbGetToken() ? "synced" : "idle");
   } else if (gistId && bbGetToken()) {
     // Pre-fetch failed (rate limit?) — retry with auth token
     const data = await _ghFetch(gistId);
     if (data) {
-      _bbState = data.progress || {};
-      _bbNotes = data.notes   || {};
+      _bbState    = data.progress  || {};
+      _bbNotes    = data.notes     || {};
+      _bbNotion   = data.notion    || {};
+      _bbTimelog  = data.timelog   || {};
+      _bbSessions = data.sessions  || [];
       _localSet(BB_KEY_PROGRESS, _bbState);
-      _localSet(BB_KEY_NOTES,   _bbNotes);
+      _localSet(BB_KEY_NOTES,    _bbNotes);
+      _localSet(BB_KEY_NOTION,   _bbNotion);
+      _localSet(BB_KEY_TIMELOG,  _bbTimelog);
+      _localSet(BB_KEY_SESSIONS, _bbSessions);
     } else {
       _bbState = _localGet(BB_KEY_PROGRESS) || {};
       _bbNotes = _localGet(BB_KEY_NOTES)   || {};
