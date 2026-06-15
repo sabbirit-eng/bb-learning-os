@@ -114,6 +114,7 @@
   <div style="display:flex;gap:10px;margin-top:16px;">
     <button onclick="closeSessionModal(true)" style="flex:1;padding:11px 0;background:#34d399;color:#000;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ নোট সেভ করো</button>
     <button onclick="closeSessionModal(false)" style="padding:11px 18px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;">নোট বাদে সেভ</button>
+    <button onclick="cancelSessionModal()" style="padding:11px 18px;background:transparent;color:#f87171;border:1px solid #f87171;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;">✕ বাতিল</button>
   </div>
 </div>
 
@@ -589,6 +590,13 @@ function closeSessionModal(withNote) {
   bbAddSession(phaseId, mins, note);
   refreshTimeBadge(phaseId);
   renderTimeLog(phaseId);
+  _pendingSession = null;
+  document.getElementById('sessionModalOverlay').style.display = 'none';
+  document.getElementById('sessionModal').style.display = 'none';
+}
+
+function cancelSessionModal() {
+  /* বাতিল — কোনো সময় সেভ হবে না, session data বাদ দেওয়া হবে */
   _pendingSession = null;
   document.getElementById('sessionModalOverlay').style.display = 'none';
   document.getElementById('sessionModal').style.display = 'none';
