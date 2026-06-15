@@ -898,6 +898,88 @@ function bbResetProgress() {
   bbScheduleSync();
 }
 
+/* ── Selective reset ───────────────────────────────────────────────────────
+   opts: { progress, notes, time, notion } — শুধু true করা ক্যাটাগরিগুলো রিসেট হবে
+   ───────────────────────────────────────────────────────────────────────── */
+function bbResetData(opts) {
+  opts = opts || {};
+  if (opts.progress) {
+    _bbState = {};
+    _localDel(BB_KEY_PROGRESS);
+  }
+  if (opts.notes) {
+    _bbNotes = {};
+    _localDel(BB_KEY_NOTES);
+  }
+  if (opts.notion) {
+    _bbNotion = {};
+    _localDel(BB_KEY_NOTION);
+  }
+  if (opts.time) {
+    _bbTimelog = {};
+    _bbSessions = [];
+    _localDel(BB_KEY_TIMELOG);
+    _localDel(BB_KEY_SESSIONS);
+  }
+  bbScheduleSync();
+}
+
+/* ── Reset Options Modal ──────────────────────────────────────────────────
+   প্রতিটি পেজে #resetModalOverlay / #resetModal মার্কআপ থাকলে এই ফাংশনগুলো
+   ব্যবহার করে কোন কোন ডেটা রিসেট করতে হবে সেটা বেছে নেওয়ার UI দেখানো হয়।
+   রিসেট সফল হলে 'bb:dataReset' কাস্টম ইভেন্ট ছাড়া হয় — পেজগুলো এটা শুনে
+   নিজেদের UI রিফ্রেশ করে।
+   ───────────────────────────────────────────────────────────────────────── */
+function bbOpenResetModal() {
+  const overlay = document.getElementById('resetModalOverlay');
+  const modal   = document.getElementById('resetModal');
+  if (!overlay || !modal) return;
+  overlay.style.display = 'block';
+  modal.style.display = 'block';
+}
+function bbCloseResetModal() {
+  const overlay = document.getElementById('resetModalOverlay');
+  const modal   = document.getElementById('resetModal');
+  if (overlay) overlay.style.display = 'none';
+  if (modal)   modal.style.display = 'none';
+}
+function bbToggleAllResetOptions() {
+  const boxes = document.querySelectorAll('#resetModal .reset-opt');
+  if (!boxes.length) return;
+  const allChecked = Array.prototype.every.call(boxes, function(b){ return b.checked; });
+  boxes.forEach(function(b){ b.checked = !allChecked; });
+}
+function bbConfirmReset() {
+  const elProgress = document.getElementById('resetOptProgress');
+  const elNotes    = document.getElementById('resetOptNotes');
+  const elTime     = document.getElementById('resetOptTime');
+  const elNotion   = document.getElementById('resetOptNotion');
+  const opts = {
+    progress: !!(elProgress && elProgress.checked),
+    notes:    !!(elNotes && elNotes.checked),
+    time:     !!(elTime && elTime.checked),
+    notion:   !!(elNotion && elNotion.checked)
+  };
+  if (!opts.progress && !opts.notes && !opts.time && !opts.notion) {
+    alert('⚠️ অন্তত একটি অপশন সিলেক্ট করো।');
+    return;
+  }
+  const labels = [];
+  if (opts.progress) labels.push('রোডম্যাপ প্রোগ্রেস (চেক করা স্কিল/টাস্ক)');
+  if (opts.notes)    labels.push('পার্সোনাল নোট');
+  if (opts.time)     labels.push('সময় ট্র্যাকিং ও সেশন লগ');
+  if (opts.notion)   labels.push('Notion লিংক');
+  const sure = confirm(
+    'তুমি কি নিশ্চিত? নিচের ডেটা মুছে যাবে (সব ডিভাইসে, GitHub Gist সহ):\n\n• ' +
+    labels.join('\n• ') +
+    '\n\nএই কাজ আর ফিরিয়ে নেওয়া যাবে না।'
+  );
+  if (!sure) return;
+  bbResetData(opts);
+  bbCloseResetModal();
+  window.dispatchEvent(new CustomEvent('bb:dataReset', { detail: opts }));
+}
+
 /* — Sync — */
 function bbScheduleSync() {
   if (_bbShareMode) return;

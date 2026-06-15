@@ -22,6 +22,59 @@
   </div>
 </nav>
 
+<!-- ===== RESET OPTIONS MODAL ===== -->
+<div id="resetModalOverlay" class="modal-overlay" style="display:none;" onclick="bbCloseResetModal()"></div>
+<div id="resetModal" class="gh-modal" style="display:none;">
+  <div class="gh-modal-head">
+    <h3>🗑 রিসেট অপশন</h3>
+    <button class="modal-close" onclick="bbCloseResetModal()">✕</button>
+  </div>
+  <p class="gh-modal-desc">কোন কোন ডেটা রিসেট করতে চাও বেছে নাও — সিলেক্ট করা ডেটা সব ডিভাইসে (GitHub Gist সহ) মুছে যাবে।</p>
+
+  <div class="reset-option-list">
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptProgress" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>✅ রোডম্যাপ প্রোগ্রেস</strong>
+        <p>সব ফেইজের চেক করা স্কিল/টাস্ক — কমপ্লিশন %, লেভেল ও ETA ০-তে ফিরে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptNotes" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>📝 পার্সোনাল নোট</strong>
+        <p>প্রতিটি ফেইজের জন্য লেখা নোট মুছে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptTime" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>⏱ সময় ট্র্যাকিং ও সেশন লগ</strong>
+        <p>মোট সময়, ফেইজ-ভিত্তিক ব্রেকডাউন এবং সাম্প্রতিক সেশন history মুছে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptNotion">
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>🔗 Notion লিংক</strong>
+        <p>প্রতিটি ফেইজের সাথে যুক্ত করা Notion পেজ লিংক মুছে যাবে।</p>
+      </div>
+    </label>
+  </div>
+
+  <div class="reset-modal-actions">
+    <button class="reset-selectall-btn" onclick="bbToggleAllResetOptions()">সব সিলেক্ট/আনসিলেক্ট</button>
+    <div class="reset-actions-right">
+      <button class="modal-cancel-btn" onclick="bbCloseResetModal()">বাতিল</button>
+      <button class="modal-danger-btn" onclick="bbConfirmReset()">নির্বাচিত ডেটা রিসেট করো</button>
+    </div>
+  </div>
+</div>
+
 <header class="hero">
   <div class="wrap">
     <p class="eyebrow">Progress Dashboard</p>
@@ -343,10 +396,7 @@ function renderTimeSection() {
 }
 
 function resetAll(){
-  const sure = confirm('তুমি কি নিশ্চিত? "RESET ROADMAP" — এই কমান্ডে সম্পূর্ণ প্রোগ্রেস ০% এ ফিরে যাবে (সব পেজে)।');
-  if(!sure) return;
-  bbResetProgress();
-  render();
+  bbOpenResetModal();
 }
 
 async function init() {
@@ -358,6 +408,7 @@ async function init() {
     bbStartPolling(15000);
     window.addEventListener('bb:remoteUpdate', () => render());
   }
+  window.addEventListener('bb:dataReset', () => render());
 }
 init();
 </script>
