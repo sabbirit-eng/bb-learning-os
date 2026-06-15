@@ -612,11 +612,13 @@ const BB_KEY_GIST_ID_LS = "bb_gist_id_v3";
 const BB_KEY_SESSION    = "bb_session_v3";
 const BB_KEY_NOTION     = "bb_notion_v3";      // Notion page links per phase
 const BB_KEY_TIMELOG    = "bb_timelog_v3";     // Time tracker: { "2026-06-14": { p0: 45, p1: 30 } }
+const BB_KEY_SESSIONS   = "bb_sessions_v3";    // Session log: [{ ts, phaseId, mins, note }]
 
 let _bbState        = null;
 let _bbNotes        = null;
 let _bbNotion       = null;   // { phaseId: "https://notion.so/..." }
 let _bbTimelog      = null;   // { "YYYY-MM-DD": { phaseId: minutes } }
+let _bbSessions     = null;   // [{ ts, phaseId, mins, note }]
 let _bbShareMode    = false;
 let _syncTimer      = null;
 let _decryptedToken = null;   // in-memory only — never re-stored as plain text
@@ -847,6 +849,26 @@ function bbGetTimeStats() {
   });
   return { totalMins, perDay, perPhase, days };
 }
+function bbLoadSessions() {
+  if (_bbSessions === null) _bbSessions = _localGet(BB_KEY_SESSIONS) || [];
+  return _bbSessions;
+}
+function bbAddSession(phaseId, mins, note) {
+  const sessions = bbLoadSessions();
+  sessions.push({ ts: new Date().toISOString(), phaseId, mins: mins, note: note || '' });
+  if (sessions.length > 200) sessions.splice(0, sessions.length - 200);
+  _bbSessions = sessions;
+  _localSet(BB_KEY_SESSIONS, _bbSessions);
+}
+function bbGetSessions(limit) {
+  limit = limit || 20;
+  const sessions = bbLoadSessions();
+  return sessions.slice(-limit).reverse();
+}
+function bbGetTotalSessions() {
+  return bbLoadSessions().length;
+}
+
 function bbIsChecked(state, id) { return !!state[id]; }
 
 function bbSetChecked(state, id, val) {

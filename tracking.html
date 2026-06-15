@@ -80,6 +80,38 @@
   </div>
 </section>
 
+<!-- ===================== TIME TRACKER ===================== -->
+<section id="time-tracker">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-tag">Time Tracker · সময় পরিমাপ</p>
+      <h2>⏱ মোট শেখার সময় — Phase-ভিত্তিক ব্রেকডাউন</h2>
+      <p class="section-desc">Roadmap পেজে ▶ শুরু করো বাটন দিয়ে timer শুরু করলে সময় এখানে জমা হয়। সেশন শেষে নোট যোগ করলে সেটাও দেখা যাবে।</p>
+    </div>
+
+    <!-- 4-card summary stats -->
+    <div class="stat-grid" style="margin-bottom:24px;">
+      <div class="stat-card"><div class="v" id="ttTotalTime">0 ঘণ্টা</div><div class="l">মোট_সময়_ব্যয়</div></div>
+      <div class="stat-card"><div class="v" id="ttTodayTime">0 মিনিট</div><div class="l">আজকের_সময়</div></div>
+      <div class="stat-card"><div class="v" id="ttSessions">0</div><div class="l">মোট_সেশন</div></div>
+      <div class="stat-card"><div class="v" id="ttAvgDaily">0 মিনিট</div><div class="l">গড়_প্রতিদিন</div></div>
+    </div>
+
+    <!-- Phase breakdown table -->
+    <div class="track-card" style="margin-bottom:16px;">
+      <div style="padding:16px 20px 10px; font-size:12px; color:var(--muted); font-weight:700; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid var(--border);">Phase-ভিত্তিক সময় ব্রেকডাউন</div>
+      <div id="ttPhaseRows" style="padding:8px 0;"></div>
+    </div>
+
+    <!-- Recent sessions list -->
+    <div class="track-card" id="ttSessionsCard">
+      <div style="padding:16px 20px 10px; font-size:12px; color:var(--muted); font-weight:700; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid var(--border);">সাম্প্রতিক সেশন</div>
+      <div id="ttSessionsList" style="padding:4px 0;"></div>
+      <div id="ttNoSessions" style="padding:24px 20px; color:var(--muted); font-size:13.5px; display:none;">এখনও কোনো সেশন নেই। Roadmap পেজে ▶ শুরু করো বাটনে ক্লিক করো।</div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== JOURNEY MAP ===================== -->
 <section id="journey">
   <div class="wrap">
@@ -191,6 +223,9 @@ function render(){
   });
   document.getElementById('moduleOut').textContent = unlockedCount + ' / ' + MODULES.length;
 
+  /* Time tracker section */
+  renderTimeSection();
+
   // Next best step
   let nextPhase = ROADMAP.find(ph => s.perPhase[ph.id].pct < 100);
   const box = document.getElementById('nextStepBox');
@@ -210,6 +245,101 @@ function render(){
       বিস্তারিত "কোথায় ও কীভাবে শিখবে" দেখো <a href="roadmap.html">রোডম্যাপ পেজে</a>।
       এই ফেইজ শেষ হলে: <em>${nextPhase.buildTask}</em>`;
   }
+}
+
+function fmtMins(mins) {
+  if (!mins) return '0 মিনিট';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h > 0 && m > 0) return h + ' ঘণ্টা ' + m + ' মিনিট';
+  if (h > 0) return h + ' ঘণ্টা';
+  return m + ' মিনিট';
+}
+function fmtMinsShort(mins) {
+  if (!mins) return '0মি';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h > 0 && m > 0) return h + 'ঘ ' + m + 'মি';
+  if (h > 0) return h + 'ঘ';
+  return m + 'মি';
+}
+function fmtDate(isoStr) {
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('bn-BD', { month: 'short', day: 'numeric' }) + ', ' +
+           d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return isoStr; }
+}
+
+function renderTimeSection() {
+  const stats = bbGetTimeStats();
+  const totalMins = stats.totalMins;
+
+  /* Summary stats */
+  const h = Math.floor(totalMins / 60), m = totalMins % 60;
+  document.getElementById('ttTotalTime').textContent =
+    totalMins === 0 ? '0 মিনিট' : (h > 0 ? (h + 'ঘ ' + m + 'মি') : (m + ' মিনিট'));
+
+  const todayKey = new Date().toISOString().slice(0,10);
+  const todayMins = stats.perDay[todayKey] || 0;
+  document.getElementById('ttTodayTime').textContent = fmtMinsShort(todayMins);
+
+  const totalSessions = bbGetTotalSessions();
+  document.getElementById('ttSessions').textContent = totalSessions;
+
+  const dayCount = stats.days.length;
+  const avgMins = dayCount > 0 ? Math.round(totalMins / dayCount) : 0;
+  document.getElementById('ttAvgDaily').textContent = fmtMinsShort(avgMins);
+
+  /* Phase breakdown rows */
+  const phaseRowsEl = document.getElementById('ttPhaseRows');
+  const maxPhaseMins = Math.max(1, ...ROADMAP.map(p => stats.perPhase[p.id] || 0));
+  phaseRowsEl.innerHTML = ROADMAP.map(phase => {
+    const pMins = stats.perPhase[phase.id] || 0;
+    const barW = Math.round((pMins / maxPhaseMins) * 100);
+    const pct = totalMins > 0 ? Math.round((pMins / totalMins) * 100) : 0;
+    return '<div class="track-row" style="align-items:center;">' +
+      '<div class="name" style="min-width:0;">' +
+        '<a href="roadmap.html" style="font-size:13.5px;">Phase ' + phase.num + ' — ' + phase.title + '</a>' +
+        '<span class="sub">' + phase.titleEn + '</span>' +
+      '</div>' +
+      '<div class="track-bar" style="flex:1;">' +
+        '<div style="height:100%;width:' + barW + '%;background:' +
+          (pMins > 0 ? '#34d399' : 'var(--border)') + ';border-radius:4px;transition:width .4s;"></div>' +
+      '</div>' +
+      '<div class="track-pct" style="min-width:90px;text-align:right;color:' +
+        (pMins > 0 ? 'var(--text)' : 'var(--muted)') + ';">' +
+        fmtMinsShort(pMins) +
+        (pMins > 0 ? ' <span style="color:var(--muted);font-size:11px;">(' + pct + '%)</span>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  /* Recent sessions list */
+  const sessions = bbGetSessions(20);
+  const listEl = document.getElementById('ttSessionsList');
+  const noEl = document.getElementById('ttNoSessions');
+  if (!sessions.length) {
+    listEl.innerHTML = '';
+    noEl.style.display = 'block';
+    return;
+  }
+  noEl.style.display = 'none';
+  listEl.innerHTML = sessions.map(function(s) {
+    const phase = ROADMAP.find(p => p.id === s.phaseId);
+    const phaseName = phase ? ('Phase ' + phase.num + ' — ' + phase.title) : s.phaseId;
+    return '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 20px;border-bottom:1px solid var(--border);">' +
+      '<div style="min-width:44px;padding-top:2px;">' +
+        '<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;' +
+          'font-size:12px;font-weight:700;padding:3px 7px;color:#34d399;">' +
+          fmtMinsShort(s.mins) +
+        '</span>' +
+      '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">' + phaseName + '</div>' +
+        (s.note ? '<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:3px;">' + s.note + '</div>' : '') +
+        '<div style="font-size:11px;color:var(--muted);opacity:.7;">' + fmtDate(s.ts) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function resetAll(){

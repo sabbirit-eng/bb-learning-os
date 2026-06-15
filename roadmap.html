@@ -103,6 +103,20 @@
   </div>
 </div>
 
+<!-- ===== SESSION END MODAL ===== -->
+<div id="sessionModalOverlay" class="modal-overlay" style="display:none;" onclick="closeSessionModal(false)"></div>
+<div id="sessionModal" class="gh-modal" style="display:none;">
+  <div class="gh-modal-head">
+    <h3>⏱ সেশন শেষ</h3>
+    <button class="modal-close" onclick="closeSessionModal(false)">✕</button>
+  </div>
+  <div id="sessionModalBody"></div>
+  <div style="display:flex;gap:10px;margin-top:16px;">
+    <button onclick="closeSessionModal(true)" style="flex:1;padding:11px 0;background:#34d399;color:#000;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ নোট সেভ করো</button>
+    <button onclick="closeSessionModal(false)" style="padding:11px 18px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;">নোট বাদে সেভ</button>
+  </div>
+</div>
+
 <!-- ===== HERO ===== -->
 <header class="hero">
   <div class="wrap hero-grid">
@@ -523,13 +537,61 @@ function stopTimer(phaseId) {
   delete _timers[phaseId];
   const elapsed = Math.floor((Date.now() - start) / 1000);
   const mins = Math.max(1, Math.round(elapsed / 60));
-  bbLogTime(phaseId, mins);
   const btn = document.getElementById('timer-btn-' + phaseId);
   if (btn) { btn.textContent = '▶ শুরু করো'; btn.classList.remove('running'); }
   const disp = document.getElementById('timer-display-' + phaseId);
   if (disp) disp.textContent = '00:00:00';
+  showSessionModal(phaseId, mins);
+}
+
+/* ---- Session End Modal ---- */
+let _pendingSession = null;
+
+function showSessionModal(phaseId, mins) {
+  const phase = ROADMAP.find(p => p.id === phaseId);
+  const phaseName = phase ? ('Phase ' + phase.num + ' — ' + phase.title) : phaseId;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  const timeStr = h > 0 ? (h + ' ঘণ্টা ' + m + ' মিনিট') : (m + ' মিনিট');
+  _pendingSession = { phaseId, mins };
+  document.getElementById('sessionModalBody').innerHTML =
+    '<p class="gh-modal-desc"><strong>' + phaseName + '</strong>-এ ' +
+    '<strong style="color:#34d399;font-size:16px;">' + timeStr + '</strong> কাজ করেছ।' +
+    '<br>এই সেশনে কী শিখলে বা কী করলে?</p>' +
+    '<textarea id="sessionNoteInput" ' +
+    'placeholder="যেমন: Git branching practice করলাম, Flask route বুঝলাম, CLI tool build করলাম..." ' +
+    'style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface-2);' +
+    'border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13.5px;' +
+    'font-family:inherit;resize:vertical;min-height:80px;line-height:1.6;outline:none;' +
+    'transition:border-color .2s;" ' +
+    'onfocus="this.style.borderColor=\'#34d399\'" ' +
+    'onblur="this.style.borderColor=\'var(--border)\'"></textarea>';
+  document.getElementById('sessionModalOverlay').style.display = 'block';
+  document.getElementById('sessionModal').style.display = 'block';
+  setTimeout(function() {
+    const ta = document.getElementById('sessionNoteInput');
+    if (ta) ta.focus();
+  }, 80);
+}
+
+function closeSessionModal(withNote) {
+  if (!_pendingSession) {
+    document.getElementById('sessionModalOverlay').style.display = 'none';
+    document.getElementById('sessionModal').style.display = 'none';
+    return;
+  }
+  const { phaseId, mins } = _pendingSession;
+  let note = '';
+  if (withNote) {
+    const inp = document.getElementById('sessionNoteInput');
+    note = inp ? inp.value.trim() : '';
+  }
+  bbLogTime(phaseId, mins);
+  bbAddSession(phaseId, mins, note);
   refreshTimeBadge(phaseId);
   renderTimeLog(phaseId);
+  _pendingSession = null;
+  document.getElementById('sessionModalOverlay').style.display = 'none';
+  document.getElementById('sessionModal').style.display = 'none';
 }
 
 function addManualTime(phaseId) {
