@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ডেইলি টাস্ক — BusinessBrain AI Learning OS</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- ===== SHARE MODE BANNER ===== -->
+<div id="shareBanner" class="share-banner" style="display:none;">
+  👁️ <strong>Read-only View</strong> — তুমি শুধু এই টাস্ক প্ল্যান দেখতে পারছো, কোনো পরিবর্তন করা যাবে না।
+</div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand"><span class="brand-dot"></span>BUSINESSBRAIN_AI · LEARNING_OS</div>
+    <div class="page-links">
+      <a href="index.html">হোম</a>
+      <a href="roadmap.html">রোডম্যাপ</a>
+      <a href="project.html">প্রজেক্ট</a>
+      <a href="tracking.html">ট্র্যাকিং</a>
+      <a href="tasks.html" class="active">ডেইলি টাস্ক</a>
+    </div>
+    <span id="bbSyncBadge" class="bb-sync-badge bb-sync-idle" style="font-size:11px;">○ GitHub</span>
+    <button class="reset-btn" id="resetBtn" onclick="resetAll()">RESET</button>
+  </div>
+</nav>
+
+<!-- ===== RESET OPTIONS MODAL ===== -->
+<div id="resetModalOverlay" class="modal-overlay" style="display:none;" onclick="bbCloseResetModal()"></div>
+<div id="resetModal" class="gh-modal" style="display:none;">
+  <div class="gh-modal-head">
+    <h3>🗑 রিসেট অপশন</h3>
+    <button class="modal-close" onclick="bbCloseResetModal()">✕</button>
+  </div>
+  <p class="gh-modal-desc">কোন কোন ডেটা রিসেট করতে চাও বেছে নাও — সিলেক্ট করা ডেটা সব ডিভাইসে (GitHub Gist সহ) মুছে যাবে।</p>
+
+  <div class="reset-option-list">
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptProgress" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>✅ রোডম্যাপ প্রোগ্রেস</strong>
+        <p>সব ফেইজের চেক করা স্কিল/টাস্ক — কমপ্লিশন %, লেভেল ও ETA ০-তে ফিরে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptNotes" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>📝 পার্সোনাল নোট</strong>
+        <p>প্রতিটি ফেইজের জন্য লেখা নোট মুছে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptTime" checked>
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>⏱ সময় ট্র্যাকিং ও সেশন লগ</strong>
+        <p>মোট সময়, ফেইজ-ভিত্তিক ব্রেকডাউন এবং সাম্প্রতিক সেশন history মুছে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptNotion">
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>🔗 Notion লিংক</strong>
+        <p>প্রতিটি ফেইজের সাথে যুক্ত করা Notion পেজ লিংক মুছে যাবে।</p>
+      </div>
+    </label>
+    <label class="reset-option">
+      <input type="checkbox" class="reset-opt" id="resetOptTasks">
+      <span class="reset-box"></span>
+      <div class="reset-option-body">
+        <strong>📅 ডেইলি টাস্ক প্ল্যান</strong>
+        <p>সব শিডিউল করা টাস্ক, প্র্যাকটিস তালিকা এবং Due/Missed history মুছে যাবে।</p>
+      </div>
+    </label>
+  </div>
+
+  <div class="reset-modal-actions">
+    <button class="reset-selectall-btn" onclick="bbToggleAllResetOptions()">সব সিলেক্ট/আনসিলেক্ট</button>
+    <div class="reset-actions-right">
+      <button class="modal-cancel-btn" onclick="bbCloseResetModal()">বাতিল</button>
+      <button class="modal-danger-btn" onclick="bbConfirmReset()">নির্বাচিত ডেটা রিসেট করো</button>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Time-boxed Learning Planner</p>
+    <h1>ডেইলি <span class="hl">টাস্ক</span> ম্যানেজমেন্ট</h1>
+    <p class="hero-sub" style="margin-bottom:28px;">কোন দিন, কতক্ষণ ধরে, কোন টপিক শিখবে এবং কী প্র্যাকটিস করবে — পুরো জার্নি এখানে প্ল্যান করো। সময়মতো শেষ না করলে স্বয়ংক্রিয়ভাবে <strong>Due</strong> হয়ে যাবে এবং এক্সট্রা সময় সহ পরের দিনের প্ল্যানে যুক্ত হবে।</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="v" id="stPlanned">0মি</div><div class="l">আজকের পরিকল্পিত সময়</div></div>
+      <div class="stat-card"><div class="v" id="stDone">0মি</div><div class="l">আজকে সম্পন্ন সময়</div></div>
+      <div class="stat-card"><div class="v" id="stToday">0 / 0</div><div class="l">আজকের টাস্ক সম্পন্ন</div></div>
+      <div class="stat-card"><div class="v" id="stStreak">0</div><div class="l">🔥 ধারাবাহিক দিন (Streak)</div></div>
+      <div class="stat-card"><div class="v" id="stMissed">0</div><div class="l">মোট Missed/Due</div></div>
+    </div>
+  </div>
+</header>
+
+<section style="padding:0 0 36px;">
+  <div class="wrap">
+
+    <!-- ===== Due banner (dynamic) ===== -->
+    <div id="dueBanner" class="due-banner" style="display:none;">
+      <span class="ico">⚠️</span>
+      <p id="dueBannerText"></p>
+    </div>
+
+    <!-- ===== Add / Edit Task form ===== -->
+    <div class="task-section">
+      <div class="task-form-card">
+        <div class="task-section-head" style="margin-bottom:18px;">
+          <h2 id="formTitle">➕ নতুন টাস্ক যোগ করো</h2>
+        </div>
+
+        <div class="task-form-grid">
+          <div class="task-field">
+            <label>তারিখ</label>
+            <input type="date" id="fDate" class="task-input">
+          </div>
+          <div class="task-field">
+            <label>অগ্রাধিকার</label>
+            <select id="fPriority" class="task-select">
+              <option value="high">🔴 উচ্চ</option>
+              <option value="medium" selected>🟡 মাঝারি</option>
+              <option value="low">🟢 নিম্ন</option>
+            </select>
+          </div>
+          <div class="task-field">
+            <label>কতক্ষণ ধরে শিখবে</label>
+            <div class="task-duration-row">
+              <input type="number" id="fHours" class="task-input" min="0" max="23" value="1" placeholder="ঘ">
+              <span>ঘণ্টা</span>
+              <input type="number" id="fMins" class="task-input" min="0" max="59" value="0" placeholder="মি">
+              <span>মিনিট</span>
+            </div>
+          </div>
+          <div class="task-field">
+            <label>রিমাইন্ডার সময় (ঐচ্ছিক)</label>
+            <input type="time" id="fReminder" class="task-input">
+          </div>
+        </div>
+
+        <div class="task-form-grid">
+          <div class="task-field task-form-full">
+            <label>কোন রোডম্যাপ ফেইজের সাথে যুক্ত করবে (ঐচ্ছিক) — সিলেক্ট করলে নিচে সেই ফেইজের আইটেম থেকে টপিক/প্র্যাকটিস বেছে নিতে পারবে</label>
+            <select id="fPhase" class="task-select" onchange="onPhaseChange()">
+              <option value="">— কোনো ফেইজ নয়, নিজে লিখবো —</option>
+            </select>
+            <div id="phasePickerBox" class="phase-picker-box">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <span style="font-size:12px; color:var(--muted);">এই ফেইজ থেকে যেগুলো আজকে/এই দিনে শিখবে সেগুলো টিক দাও</span>
+                <button type="button" class="practice-add-btn" onclick="addPickedItemsToPractice()">✓ নির্বাচিতগুলো প্র্যাকটিসে যুক্ত করো</button>
+              </div>
+              <div id="phasePickerList" class="phase-picker-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-form-grid">
+          <div class="task-field task-form-full">
+            <label>টপিক / বিষয় <span style="color:var(--danger);">*</span></label>
+            <input type="text" id="fTopic" class="task-input" list="topicSuggestions" placeholder="যেমন: Python OOP, FastAPI CRUD, SQL Joins...">
+            <datalist id="topicSuggestions"></datalist>
+          </div>
+        </div>
+
+        <div class="task-form-grid">
+          <div class="task-field task-form-full">
+            <label>আজকে কী কী প্র্যাকটিস করতে হবে</label>
+            <div class="practice-add-row">
+              <input type="text" id="fPracticeInput" class="task-input" placeholder="একটি প্র্যাকটিস আইটেম লিখে Enter বা যোগ করো ক্লিক করো">
+              <button type="button" class="practice-add-btn" onclick="addPracticeChip()">+ যোগ করো</button>
+            </div>
+            <div id="practiceChipRow" class="practice-chip-row"></div>
+          </div>
+        </div>
+
+        <div class="task-form-grid">
+          <div class="task-field task-form-full">
+            <label>নোট (ঐচ্ছিক)</label>
+            <input type="text" id="fNote" class="task-input" placeholder="এই টাস্ক নিয়ে কোনো রিমাইন্ডার বা প্রসঙ্গ...">
+          </div>
+        </div>
+
+        <div class="task-form-actions">
+          <button type="button" class="form-submit-btn" id="formSubmitBtn" onclick="submitTaskForm()">টাস্ক যুক্ত করো</button>
+          <button type="button" class="task-cancel-edit-btn" id="formCancelBtn" style="display:none;" onclick="cancelEdit()">বাতিল</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Today's tasks ===== -->
+    <div class="task-section">
+      <div class="task-section-head">
+        <h2>📌 আজকের টাস্ক — <span id="todayDateLabel" class="mono" style="font-size:14px; color:var(--muted);"></span></h2>
+        <span class="task-section-count" id="todayCount"></span>
+      </div>
+      <div id="todayTaskList" class="task-list"></div>
+    </div>
+
+    <!-- ===== Weekly overview ===== -->
+    <div class="task-section">
+      <div class="task-section-head">
+        <h2>📊 সাপ্তাহিক ওভারভিউ — পরিকল্পিত বনাম সম্পন্ন সময়</h2>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px;">
+        <div id="weekChart" class="week-chart"></div>
+        <div class="week-legend">
+          <span><span class="dot" style="background:var(--surface-2); border:1px solid var(--border);"></span> পরিকল্পিত সময়</span>
+          <span><span class="dot" style="background:linear-gradient(180deg, var(--accent), var(--accent-2));"></span> সম্পন্ন সময়</span>
+          <span><span class="dot" style="background:linear-gradient(180deg, var(--warn), var(--danger));"></span> মিসড দিন</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Upcoming agenda ===== -->
+    <div class="task-section">
+      <div class="task-section-head">
+        <h2>🗓 আসছে (Upcoming)</h2>
+        <span class="task-section-count" id="upcomingCount"></span>
+      </div>
+      <div id="agendaList" class="agenda-list"></div>
+    </div>
+
+    <!-- ===== Missed / Due history ===== -->
+    <div class="task-section">
+      <details class="phase-card">
+        <summary style="cursor:pointer; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <span style="font-family:'Tiro Bangla', serif; font-size:18px;">⚠️ Due / Missed হিস্ট্রি</span>
+          <span class="task-section-count" id="missedCount"></span>
+        </summary>
+        <div style="padding:0 20px 18px;">
+          <p style="font-size:13px; color:var(--muted); margin:0 0 14px;">এই টাস্কগুলো নির্ধারিত দিনে শেষ হয়নি — বাকি অংশ এক্সট্রা সময় সহ পরের দিনের প্ল্যানে স্বয়ংক্রিয়ভাবে যুক্ত হয়ে গেছে।</p>
+          <div id="missedList" class="task-list"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Settings ===== -->
+    <div class="task-section">
+      <div class="task-section-head">
+        <h2>⚙️ সেটিংস — মিসড টাস্কে এক্সট্রা সময় পলিসি</h2>
+      </div>
+      <div class="settings-card">
+        <p style="font-size:13px; color:var(--muted); margin:0;">কোনো টাস্ক নির্ধারিত দিনে শেষ না হলে, বাকি সময়ের সাথে কত এক্সট্রা সময় যুক্ত হয়ে পরের দিনের প্ল্যানে যাবে — তা এখান থেকে নিয়ন্ত্রণ করো।</p>
+        <div class="settings-row">
+          <div class="settings-field">
+            <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">এক্সট্রা সময় (%)</label>
+            <input type="number" id="sExtraPercent" class="task-input" min="0" max="200">
+          </div>
+          <div class="settings-field">
+            <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">সর্বনিম্ন এক্সট্রা (মিনিট)</label>
+            <input type="number" id="sExtraMin" class="task-input" min="0" max="180">
+          </div>
+          <div class="settings-field">
+            <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">প্রতিদিনের ডিফল্ট সময় (মিনিট)</label>
+            <input type="number" id="sDefaultMins" class="task-input" min="0" max="600">
+          </div>
+          <button class="settings-save-btn" onclick="saveSettings()">💾 সেভ করো</button>
+          <span class="settings-saved-msg" id="settingsSavedMsg" style="display:none;">✓ সেভ হয়েছে</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <span class="brand-dot"></span>BusinessBrain AI — Daily Task Plan · মিস হওয়া টাস্ক স্বয়ংক্রিয়ভাবে এক্সট্রা সময় সহ পরের দিনে যুক্ত হয়, প্রোগ্রেস GitHub Gist-এ সিঙ্ক হয়।
+</footer>
+
+<script src="assets/data.js"></script>
+<script>
+/* =====================================================
+   STATE
+   ===================================================== */
+let _shareMode = false;
+let _editingTaskId = null;
+let _tempPractices = [];   // chips currently being built for the add/edit form
+let _pickedPhaseId = '';
+
+/* =====================================================
+   HELPERS
+   ===================================================== */
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function fmtMinsShort(mins) {
+  mins = mins || 0;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h > 0 && m > 0) return h + 'ঘ ' + m + 'মি';
+  if (h > 0) return h + 'ঘ';
+  return m + 'মি';
+}
+function fmtDateLabel(dateKey) {
+  try {
+    const d = new Date(dateKey + 'T12:00:00');
+    return d.toLocaleDateString('bn-BD', { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch (e) { return dateKey; }
+}
+function phaseLabel(phaseId) {
+  const phase = ROADMAP.find(p => p.id === phaseId);
+  return phase ? ('Phase ' + phase.num + ' — ' + phase.title) : '';
+}
+function priorityIcon(p) {
+  return p === 'high' ? '🔴 উচ্চ' : p === 'low' ? '🟢 নিম্ন' : '🟡 মাঝারি';
+}
+
+/* =====================================================
+   FORM: phase select + topic suggestions
+   ===================================================== */
+function buildPhaseSelectOptions() {
+  const sel = document.getElementById('fPhase');
+  ROADMAP.forEach(phase => {
+    const opt = document.createElement('option');
+    opt.value = phase.id;
+    opt.textContent = 'Phase ' + phase.num + ' — ' + phase.title;
+    sel.appendChild(opt);
+  });
+  const dl = document.getElementById('topicSuggestions');
+  ROADMAP.forEach(phase => {
+    phase.items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item;
+      dl.appendChild(opt);
+    });
+  });
+}
+
+function onPhaseChange() {
+  const phaseId = document.getElementById('fPhase').value;
+  _pickedPhaseId = phaseId;
+  const box = document.getElementById('phasePickerBox');
+  const list = document.getElementById('phasePickerList');
+  if (!phaseId) { box.classList.remove('open'); list.innerHTML = ''; return; }
+
+  const phase = ROADMAP.find(p => p.id === phaseId);
+  if (!phase) { box.classList.remove('open'); return; }
+
+  const topicField = document.getElementById('fTopic');
+  if (!topicField.value.trim()) topicField.value = phase.title;
+
+  list.innerHTML = phase.items.map((item, i) => `
+    <label class="check" style="font-size:13px;">
+      <input type="checkbox" class="phasePickItem" data-text="${escapeHtml(item)}">
+      <span class="box"></span>
+      <span class="label-text">${escapeHtml(item)}</span>
+    </label>`).join('');
+  box.classList.add('open');
+}
+
+function addPickedItemsToPractice() {
+  document.querySelectorAll('.phasePickItem:checked').forEach(cb => {
+    _tempPractices.push(cb.dataset.text);
+    cb.checked = false;
+  });
+  renderPracticeChips();
+}
+
+/* =====================================================
+   FORM: practice chips
+   ===================================================== */
+function addPracticeChip() {
+  const inp = document.getElementById('fPracticeInput');
+  const val = inp.value.trim();
+  if (!val) return;
+  _tempPractices.push(val);
+  inp.value = '';
+  renderPracticeChips();
+  inp.focus();
+}
+function removePracticeChip(idx) {
+  _tempPractices.splice(idx, 1);
+  renderPracticeChips();
+}
+function renderPracticeChips() {
+  const row = document.getElementById('practiceChipRow');
+  row.innerHTML = _tempPractices.map((p, i) =>
+    `<span class="practice-chip">${escapeHtml(p)}<button type="button" onclick="removePracticeChip(${i})">✕</button></span>`
+  ).join('');
+}
+
+/* =====================================================
+   FORM: submit / edit / cancel
+   ===================================================== */
+function resetForm() {
+  _editingTaskId = null;
+  _tempPractices = [];
+  _pickedPhaseId = '';
+  document.getElementById('fDate').value = bbGetTodayKey();
+  document.getElementById('fPriority').value = 'medium';
+  const settings = bbLoadTaskSettings();
+  const defMins = settings.dailyDefaultMins || 60;
+  document.getElementById('fHours').value = Math.floor(defMins / 60);
+  document.getElementById('fMins').value = defMins % 60;
+  document.getElementById('fReminder').value = '';
+  document.getElementById('fPhase').value = '';
+  document.getElementById('fTopic').value = '';
+  document.getElementById('fPracticeInput').value = '';
+  document.getElementById('fNote').value = '';
+  document.getElementById('phasePickerBox').classList.remove('open');
+  document.getElementById('phasePickerList').innerHTML = '';
+  renderPracticeChips();
+  document.getElementById('formTitle').textContent = '➕ নতুন টাস্ক যোগ করো';
+  document.getElementById('formSubmitBtn').textContent = 'টাস্ক যুক্ত করো';
+  document.getElementById('formCancelBtn').style.display = 'none';
+}
+
+function submitTaskForm() {
+  if (_shareMode) return;
+  const topic = document.getElementById('fTopic').value.trim();
+  if (!topic) { alert('⚠️ টপিক/বিষয় লিখো।'); return; }
+  const hours = parseInt(document.getElementById('fHours').value, 10) || 0;
+  const mins  = parseInt(document.getElementById('fMins').value, 10) || 0;
+  const plannedMins = hours * 60 + mins;
+  if (plannedMins <= 0) { alert('⚠️ কতক্ষণ ধরে শিখবে তা দাও (অন্তত ১ মিনিট)।'); return; }
+
+  const data = {
+    date: document.getElementById('fDate').value || bbGetTodayKey(),
+    topic: topic,
+    phaseId: document.getElementById('fPhase').value || null,
+    practices: _tempPractices.slice(),
+    plannedMins: plannedMins,
+    priority: document.getElementById('fPriority').value,
+    reminderTime: document.getElementById('fReminder').value || '',
+    note: document.getElementById('fNote').value.trim()
+  };
+
+  if (_editingTaskId) {
+    const existing = bbGetTask(_editingTaskId);
+    const patch = Object.assign({}, data);
+    // edit করার সময় আগের প্র্যাকটিসের done-স্টেট যতটা সম্ভব বজায় রাখো
+    if (existing && existing.practices) {
+      patch.practices = data.practices.map(text => {
+        const prev = existing.practices.find(p => p.text === text);
+        return { text, done: prev ? prev.done : false };
+      });
+    } else {
+      patch.practices = data.practices.map(text => ({ text, done: false }));
+    }
+    bbUpdateTask(_editingTaskId, patch);
+  } else {
+    bbAddTask(data);
+  }
+
+  resetForm();
+  renderAll();
+}
+
+function editTask(id) {
+  const t = bbGetTask(id);
+  if (!t || _shareMode) return;
+  _editingTaskId = id;
+  _tempPractices = (t.practices || []).map(p => p.text);
+  document.getElementById('fDate').value = t.date;
+  document.getElementById('fPriority').value = t.priority || 'medium';
+  document.getElementById('fHours').value = Math.floor((t.plannedMins || 0) / 60);
+  document.getElementById('fMins').value = (t.plannedMins || 0) % 60;
+  document.getElementById('fReminder').value = t.reminderTime || '';
+  document.getElementById('fPhase').value = t.phaseId || '';
+  document.getElementById('fTopic').value = t.topic || '';
+  document.getElementById('fNote').value = t.note || '';
+  if (t.phaseId) onPhaseChange(); else { document.getElementById('phasePickerBox').classList.remove('open'); }
+  renderPracticeChips();
+  document.getElementById('formTitle').textContent = '✎ টাস্ক এডিট করো';
+  document.getElementById('formSubmitBtn').textContent = 'আপডেট করো';
+  document.getElementById('formCancelBtn').style.display = 'inline-block';
+  const formCard = document.querySelector('.task-form-card');
+  if (formCard.scrollIntoView) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function cancelEdit() { resetForm(); }
+
+function deleteTaskUI(id) {
+  if (_shareMode) return;
+  if (!confirm('এই টাস্কটি মুছে ফেলতে চাও? এটি আর ফিরিয়ে নেওয়া যাবে না।')) return;
+  bbDeleteTask(id);
+  renderAll();
+}
+
+/* =====================================================
+   TIMERS (per task — mirrors the roadmap phase timer pattern)
+   ===================================================== */
+const _timers = {};
+function toggleTaskTimer(id) { _timers[id] ? stopTaskTimer(id) : startTaskTimer(id); }
+function startTaskTimer(id) {
+  if (_timers[id] || _shareMode) return;
+  const start = Date.now();
+  const btn = document.getElementById('ttimer-btn-' + id);
+  if (btn) { btn.textContent = '⏸ থামাও'; btn.classList.add('running'); }
+  const interval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+    const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    const disp = document.getElementById('ttimer-display-' + id);
+    if (disp) disp.textContent = h + ':' + m + ':' + s;
+  }, 1000);
+  _timers[id] = { start, interval };
+}
+function stopTaskTimer(id) {
+  if (!_timers[id]) return;
+  const { start, interval } = _timers[id];
+  clearInterval(interval);
+  delete _timers[id];
+  const elapsed = Math.floor((Date.now() - start) / 1000);
+  const mins = Math.max(1, Math.round(elapsed / 60));
+  const btn = document.getElementById('ttimer-btn-' + id);
+  if (btn) { btn.textContent = '▶ শুরু করো'; btn.classList.remove('running'); }
+  const disp = document.getElementById('ttimer-display-' + id);
+  if (disp) disp.textContent = '00:00:00';
+  bbAddTaskMinutes(id, mins);
+  renderAll();
+}
+function addManualTaskMinutes(id) {
+  if (_shareMode) return;
+  const inp = document.getElementById('tmanual-' + id);
+  if (!inp) return;
+  const mins = parseInt(inp.value, 10);
+  if (!mins || mins < 1) return;
+  bbAddTaskMinutes(id, mins);
+  inp.value = '';
+  renderAll();
+}
+function togglePracticeUI(id, idx) {
+  if (_shareMode) return;
+  bbTogglePractice(id, idx);
+  renderAll();
+}
+function completeTaskUI(id) {
+  if (_shareMode) return;
+  bbCompleteTask(id);
+  renderAll();
+}
+function reopenTaskUI(id) {
+  if (_shareMode) return;
+  bbReopenTask(id);
+  renderAll();
+}
+
+/* =====================================================
+   RENDER: task card builder (shared by today/missed lists)
+   ===================================================== */
+function buildTaskCard(t, opts) {
+  opts = opts || {};
+  const readOnly = opts.readOnly || _shareMode;
+  const isDone = t.status === 'done';
+  const isMissed = t.status === 'missed';
+  const plannedMins = t.plannedMins || 0;
+  const doneMins = t.doneMins || 0;
+  const pct = plannedMins > 0 ? Math.min(150, Math.round((doneMins / plannedMins) * 100)) : 0;
+  const over = doneMins > plannedMins && plannedMins > 0;
+
+  const practicesHtml = (t.practices || []).map((p, i) => `
+    <label class="check" style="font-size:13.5px; ${readOnly ? 'cursor:default;' : ''}">
+      <input type="checkbox" ${p.done ? 'checked' : ''} ${readOnly ? 'disabled' : `onchange="togglePracticeUI('${t.id}', ${i})"`}>
+      <span class="box"></span>
+      <span class="label-text">${escapeHtml(p.text)}</span>
+    </label>`).join('');
+
+  const carryNote = t.carriedFrom
+    ? `<div class="task-carry-note">⏪ আগের একটি মিসড টাস্ক থেকে কপি হয়েছে — +${fmtMinsShort(t.extraMins || 0)} এক্সট্রা সময় যুক্ত করা হয়েছে</div>`
+    : '';
+
+  const actionsHtml = readOnly ? '' : `
+    <div class="task-card-actions">
+      <button class="task-icon-btn" title="এডিট করো" onclick="editTask('${t.id}')">✎</button>
+      <button class="task-icon-btn danger" title="মুছে ফেলো" onclick="deleteTaskUI('${t.id}')">🗑</button>
+    </div>`;
+
+  const timeRowHtml = (isMissed) ? `
+    <div class="task-time-row">
+      <span class="task-time-meta">ব্যয় হয়েছিল: <strong>${fmtMinsShort(doneMins)}</strong> / পরিকল্পিত ${fmtMinsShort(plannedMins)}</span>
+      ${t.carriedTo ? '<span class="task-time-meta" style="color:var(--warn);">→ আজকের প্ল্যানে এক্সট্রা সময় সহ যুক্ত হয়েছে</span>' : ''}
+    </div>` : `
+    <div class="task-time-row">
+      <button class="time-start-btn" id="ttimer-btn-${t.id}" ${readOnly ? 'disabled style="opacity:.5;"' : `onclick="toggleTaskTimer('${t.id}')"`}>▶ শুরু করো</button>
+      <span class="time-display" id="ttimer-display-${t.id}">00:00:00</span>
+      ${!readOnly ? `
+      <div class="time-manual-row">
+        <input type="number" class="time-manual-input" id="tmanual-${t.id}" min="1" max="999" placeholder="মিনিট">
+        <button class="time-add-btn" onclick="addManualTaskMinutes('${t.id}')">+ যোগ করো</button>
+      </div>` : ''}
+      <div class="task-mini-progress ${over ? 'over' : ''}"><div style="width:${Math.min(100, pct)}%;"></div></div>
+      <span class="task-time-meta"><strong>${fmtMinsShort(doneMins)}</strong> / ${fmtMinsShort(plannedMins)}</span>
+    </div>`;
+
+  const completeRowHtml = readOnly ? '' : (isMissed ? '' : `
+    <div class="task-complete-row">
+      ${isDone
+        ? `<button class="task-reopen-btn" onclick="reopenTaskUI('${t.id}')">↺ আবার খুলো</button>`
+        : `<button class="task-complete-btn" onclick="completeTaskUI('${t.id}')">✅ সম্পন্ন করো</button>`}
+    </div>`);
+
+  return `
+    <div class="task-card priority-${t.priority || 'medium'} ${isDone ? 'is-done' : ''}">
+      <div class="task-card-head">
+        <div class="task-card-titles">
+          <div class="task-tag-row">
+            <span class="pill ${t.priority === 'high' ? 'red' : t.priority === 'low' ? 'green' : 'amber'}">${priorityIcon(t.priority)}</span>
+            ${t.phaseId ? `<span class="task-phase-tag">${escapeHtml(phaseLabel(t.phaseId))}</span>` : ''}
+            ${isDone ? `<span class="pill green">✓ সম্পন্ন</span>` : ''}
+            ${isMissed ? `<span class="pill red">⚠ Missed — ${escapeHtml(t.date)}</span>` : ''}
+            ${t.reminderTime ? `<span class="task-time-meta">⏰ ${escapeHtml(t.reminderTime)}</span>` : ''}
+          </div>
+          <div class="task-topic">${escapeHtml(t.topic)}</div>
+          ${carryNote}
+        </div>
+        ${isMissed ? '' : actionsHtml}
+      </div>
+      ${practicesHtml ? `<div class="task-practice-list">${practicesHtml}</div>` : ''}
+      ${timeRowHtml}
+      ${t.note ? `<div class="task-time-meta" style="margin-top:8px;">📝 ${escapeHtml(t.note)}</div>` : ''}
+      ${completeRowHtml}
+    </div>`;
+}
+
+/* =====================================================
+   RENDER: sections
+   ===================================================== */
+function renderStats() {
+  const s = bbGetTaskStats();
+  document.getElementById('stPlanned').textContent = fmtMinsShort(s.plannedToday);
+  document.getElementById('stDone').textContent = fmtMinsShort(s.doneToday);
+  document.getElementById('stToday').textContent = s.doneCount + ' / ' + s.todayCount;
+  document.getElementById('stStreak').textContent = s.streak;
+  document.getElementById('stMissed').textContent = s.missedCount;
+  document.getElementById('todayDateLabel').textContent = fmtDateLabel(bbGetTodayKey());
+}
+
+function renderDueBanner() {
+  const today = bbGetTodayKey();
+  const carriedToday = bbLoadTasks().filter(t => t.date === today && t.carriedFrom);
+  const banner = document.getElementById('dueBanner');
+  const text = document.getElementById('dueBannerText');
+  if (!carriedToday.length) { banner.style.display = 'none'; return; }
+  const totalExtra = carriedToday.reduce((s, t) => s + (t.extraMins || 0), 0);
+  text.innerHTML = `<strong>${carriedToday.length}টি টাস্ক</strong> আগের দিনে শেষ না হওয়ায় আজকের প্ল্যানে যুক্ত হয়েছে — মোট <strong>+${fmtMinsShort(totalExtra)}</strong> এক্সট্রা সময় সহ। নিচে "আজকের টাস্ক"-এ দেখো।`;
+  banner.style.display = 'flex';
+}
+
+function renderToday() {
+  const tasks = bbGetTodayTasks().sort((a, b) => {
+    if (a.status === 'done' && b.status !== 'done') return 1;
+    if (a.status !== 'done' && b.status === 'done') return -1;
+    const order = { high: 0, medium: 1, low: 2 };
+    return (order[a.priority] || 1) - (order[b.priority] || 1);
+  });
+  document.getElementById('todayCount').textContent = tasks.length + 'টি টাস্ক';
+  const el = document.getElementById('todayTaskList');
+  el.innerHTML = tasks.length
+    ? tasks.map(t => buildTaskCard(t)).join('')
+    : '<div class="task-empty">আজকের জন্য এখনও কোনো টাস্ক যুক্ত করা হয়নি — উপরের ফর্ম থেকে একটি যুক্ত করো।</div>';
+}
+
+function renderUpcoming() {
+  const tasks = bbGetUpcomingTasks();
+  document.getElementById('upcomingCount').textContent = tasks.length + 'টি টাস্ক';
+  const el = document.getElementById('agendaList');
+  el.innerHTML = tasks.length
+    ? tasks.map(t => `
+      <div class="agenda-row">
+        <span class="agenda-date">${fmtDateLabel(t.date)}</span>
+        <span class="pill ${t.priority === 'high' ? 'red' : t.priority === 'low' ? 'green' : 'amber'}">${priorityIcon(t.priority)}</span>
+        <span class="agenda-topic">${escapeHtml(t.topic)}${t.phaseId ? ` <span style="color:var(--muted); font-size:11.5px;">(${escapeHtml(phaseLabel(t.phaseId))})</span>` : ''}</span>
+        <span class="agenda-mins">${fmtMinsShort(t.plannedMins)}</span>
+        ${_shareMode ? '' : `<button class="task-icon-btn" onclick="editTask('${t.id}')">✎</button><button class="task-icon-btn danger" onclick="deleteTaskUI('${t.id}')">🗑</button>`}
+      </div>`).join('')
+    : '<div class="task-empty">এখনও কোনো ভবিষ্যৎ টাস্ক প্ল্যান করা নেই।</div>';
+}
+
+function renderMissed() {
+  const tasks = bbGetMissedTasks();
+  document.getElementById('missedCount').textContent = tasks.length + 'টি';
+  const el = document.getElementById('missedList');
+  el.innerHTML = tasks.length
+    ? tasks.map(t => buildTaskCard(t, { readOnly: true })).join('')
+    : '<div class="task-empty">এখনও কোনো টাস্ক মিস হয়নি — চালিয়ে যাও! 🎉</div>';
+}
+
+function renderWeekly() {
+  const data = bbGetWeeklyTaskStats(7);
+  const maxMins = Math.max(60, ...data.map(d => Math.max(d.planned, d.done)));
+  const el = document.getElementById('weekChart');
+  el.innerHTML = data.map(d => {
+    const plannedH = Math.round((d.planned / maxMins) * 100);
+    const doneH = Math.round((d.done / maxMins) * 100);
+    const over = d.planned > 0 && d.done > d.planned;
+    const isToday = d.day === bbGetTodayKey();
+    return `
+      <div class="week-day">
+        <div class="wv">${d.count ? fmtMinsShort(d.done) : '—'}</div>
+        <div class="week-bars">
+          <div class="week-bar planned" style="height:${Math.max(3, plannedH)}%;" title="পরিকল্পিত: ${fmtMinsShort(d.planned)}"></div>
+          <div class="week-bar done ${over ? 'over' : ''}" style="height:${Math.max(3, doneH)}%;" title="সম্পন্ন: ${fmtMinsShort(d.done)}"></div>
+        </div>
+        <div class="wl" style="${isToday ? 'color:var(--accent); font-weight:600;' : ''}">${fmtDateLabel(d.day).split(',')[0]}</div>
+      </div>`;
+  }).join('');
+}
+
+function loadSettingsUI() {
+  const s = bbLoadTaskSettings();
+  document.getElementById('sExtraPercent').value = s.extraPercent;
+  document.getElementById('sExtraMin').value = s.extraMinMins;
+  document.getElementById('sDefaultMins').value = s.dailyDefaultMins;
+}
+function saveSettings() {
+  if (_shareMode) return;
+  bbSaveTaskSettings({
+    extraPercent: Math.max(0, parseInt(document.getElementById('sExtraPercent').value, 10) || 0),
+    extraMinMins: Math.max(0, parseInt(document.getElementById('sExtraMin').value, 10) || 0),
+    dailyDefaultMins: Math.max(0, parseInt(document.getElementById('sDefaultMins').value, 10) || 0)
+  });
+  const msg = document.getElementById('settingsSavedMsg');
+  msg.style.display = 'inline';
+  setTimeout(() => { msg.style.display = 'none'; }, 2000);
+}
+
+function renderAll() {
+  renderStats();
+  renderDueBanner();
+  renderToday();
+  renderUpcoming();
+  renderMissed();
+  renderWeekly();
+}
+
+function resetAll() { bbOpenResetModal(); }
+
+/* =====================================================
+   INIT
+   ===================================================== */
+async function init() {
+  buildPhaseSelectOptions();
+  const result = await bbInitPage();
+  _shareMode = result.shareMode;
+
+  if (_shareMode) {
+    document.getElementById('shareBanner').style.display = 'block';
+    document.querySelectorAll('.task-form-card, .settings-card').forEach(e => e.style.display = 'none');
+  } else {
+    resetForm();
+    loadSettingsUI();
+  }
+
+  renderAll();
+
+  if (!_shareMode) {
+    bbStartPolling(15000);
+    window.addEventListener('bb:remoteUpdate', () => { renderAll(); loadSettingsUI(); });
+  }
+  window.addEventListener('bb:dataReset', () => { renderAll(); loadSettingsUI(); });
+
+  // প্র্যাকটিস ইনপুটে Enter চাপলে চিপ যুক্ত হয়
+  document.getElementById('fPracticeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addPracticeChip(); }
+  });
+}
+init();
+</script>
+</body>
+</html>

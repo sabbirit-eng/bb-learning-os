@@ -613,12 +613,16 @@ const BB_KEY_SESSION    = "bb_session_v3";
 const BB_KEY_NOTION     = "bb_notion_v3";      // Notion page links per phase
 const BB_KEY_TIMELOG    = "bb_timelog_v3";     // Time tracker: { "2026-06-14": { p0: 45, p1: 30 } }
 const BB_KEY_SESSIONS   = "bb_sessions_v3";    // Session log: [{ ts, phaseId, mins, note }]
+const BB_KEY_TASKS      = "bb_tasks_v3";       // Daily Task Plan: [{ id, date, topic, phaseId, practices[], plannedMins, doneMins, status, ... }]
+const BB_KEY_TASK_SET   = "bb_task_settings_v3"; // { extraPercent, extraMinMins, dailyDefaultMins }
 
 let _bbState        = null;
 let _bbNotes        = null;
 let _bbNotion       = null;   // { phaseId: "https://notion.so/..." }
 let _bbTimelog      = null;   // { "YYYY-MM-DD": { phaseId: minutes } }
 let _bbSessions     = null;   // [{ ts, phaseId, mins, note }]
+let _bbTasks        = null;   // [{ id, date, topic, phaseId, practices, plannedMins, doneMins, status, priority, ... }]
+let _bbTaskSettings = null;   // { extraPercent, extraMinMins, dailyDefaultMins }
 let _bbShareMode    = false;
 let _syncTimer      = null;
 let _decryptedToken = null;   // in-memory only — never re-stored as plain text
@@ -763,6 +767,8 @@ async function _ghSave() {
     notion: _bbNotion || {},
     timelog: _bbTimelog || {},
     sessions: _bbSessions || [],
+    tasks: _bbTasks || [],
+    taskSettings: _bbTaskSettings || {},
     encToken: encToken
   }, null, 2);
   try {
@@ -871,6 +877,266 @@ function bbGetTotalSessions() {
   return bbLoadSessions().length;
 }
 
+/* =========================================================
+   DAILY TASK PLAN — ইঞ্জিন
+   প্রতিদিন কোন টপিক কতক্ষণ ধরে শিখবে এবং কী প্র্যাকটিস করবে তা প্ল্যান করা,
+   সময়মতো শেষ না হলে স্বয়ংক্রিয়ভাবে "Due/Missed" তালিকায় যাওয়া এবং
+   এক্সট্রা সময় যুক্ত করে পরের দিনের প্ল্যানে কপি হওয়া (carry-over)।
+   ========================================================= */
+function bbGenId(prefix) {
+  return (prefix || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+/* YYYY-MM-DD for "today + offsetDays" (offsetDays can be negative) */
+function bbDateKeyOffset(offsetDays) {
+  const d = new Date();
+  d.setDate(d.getDate() + (offsetDays || 0));
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* ── Task settings (extra-time policy on missed days) ───────────────────── */
+function _bbDefaultTaskSettings() {
+  return { extraPercent: 30, extraMinMins: 15, dailyDefaultMins: 60 };
+}
+function bbLoadTaskSettings() {
+  if (_bbTaskSettings === null) {
+    _bbTaskSettings = Object.assign(_bbDefaultTaskSettings(), _localGet(BB_KEY_TASK_SET) || {});
+  }
+  return _bbTaskSettings;
+}
+function bbSaveTaskSettings(patch) {
+  const s = Object.assign({}, bbLoadTaskSettings(), patch || {});
+  _bbTaskSettings = s;
+  _localSet(BB_KEY_TASK_SET, _bbTaskSettings);
+  bbScheduleSync();
+  return s;
+}
+
+/* ── Task CRUD ────────────────────────────────────────────────────────────── */
+function bbLoadTasks() {
+  if (_bbTasks === null) _bbTasks = _localGet(BB_KEY_TASKS) || [];
+  return _bbTasks;
+}
+function bbSaveTasks(tasks) {
+  _bbTasks = tasks;
+  _localSet(BB_KEY_TASKS, _bbTasks);
+  bbScheduleSync();
+}
+function bbGetTask(id) {
+  return bbLoadTasks().find(t => t.id === id) || null;
+}
+function bbAddTask(data) {
+  data = data || {};
+  const tasks = bbLoadTasks();
+  const task = {
+    id: bbGenId('t'),
+    date: data.date || bbGetTodayKey(),
+    topic: (data.topic || '').trim(),
+    phaseId: data.phaseId || null,
+    practices: (Array.isArray(data.practices) ? data.practices : [])
+      .filter(p => p && String(p).trim())
+      .map(p => ({ text: String(p).trim(), done: false })),
+    plannedMins: Math.max(0, parseInt(data.plannedMins, 10) || 0),
+    doneMins: 0,
+    priority: data.priority || 'medium',          // high | medium | low
+    status: 'pending',                              // pending | done | missed
+    reminderTime: data.reminderTime || '',          // "HH:MM" — ঐচ্ছিক
+    note: data.note || '',
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    carriedFrom: null,
+    carriedTo: null,
+    extraMins: 0
+  };
+  tasks.push(task);
+  bbSaveTasks(tasks);
+  return task;
+}
+function bbUpdateTask(id, patch) {
+  const tasks = bbLoadTasks();
+  const idx = tasks.findIndex(t => t.id === id);
+  if (idx === -1) return null;
+  tasks[idx] = Object.assign({}, tasks[idx], patch || {});
+  bbSaveTasks(tasks);
+  return tasks[idx];
+}
+function bbDeleteTask(id) {
+  const tasks = bbLoadTasks().filter(t => t.id !== id);
+  bbSaveTasks(tasks);
+}
+function bbTogglePractice(taskId, idx) {
+  const tasks = bbLoadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !t.practices || !t.practices[idx]) return null;
+  t.practices[idx].done = !t.practices[idx].done;
+  bbSaveTasks(tasks);
+  return t;
+}
+/* টাইমার/ম্যানুয়াল এন্ট্রি থেকে আসা সময় টাস্কে যোগ করো — phaseId থাকলে রোডম্যাপ
+   টাইম-ট্র্যাকার ও ড্যাশবোর্ডেও (bbLogTime/bbAddSession) reflect হবে */
+function bbAddTaskMinutes(taskId, mins, note) {
+  if (!mins || mins < 1) return null;
+  const tasks = bbLoadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return null;
+  t.doneMins = (t.doneMins || 0) + mins;
+  bbSaveTasks(tasks);
+  if (t.phaseId) {
+    bbLogTime(t.phaseId, mins);
+    bbAddSession(t.phaseId, mins, note || ('ডেইলি টাস্ক: ' + t.topic));
+  }
+  return t;
+}
+function bbCompleteTask(id, note) {
+  const patch = { status: 'done', completedAt: new Date().toISOString() };
+  if (note) patch.note = note;
+  return bbUpdateTask(id, patch);
+}
+function bbReopenTask(id) {
+  return bbUpdateTask(id, { status: 'pending', completedAt: null });
+}
+
+/* ── Queries ──────────────────────────────────────────────────────────────── */
+function bbGetTasksForDate(date) {
+  return bbLoadTasks().filter(t => t.date === date);
+}
+function bbGetTodayTasks() {
+  return bbGetTasksForDate(bbGetTodayKey());
+}
+function bbGetUpcomingTasks(limit) {
+  const today = bbGetTodayKey();
+  const list = bbLoadTasks().filter(t => t.date > today).sort((a, b) => a.date.localeCompare(b.date));
+  return limit ? list.slice(0, limit) : list;
+}
+function bbGetMissedTasks() {
+  return bbLoadTasks()
+    .filter(t => t.status === 'missed')
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/* ── Overdue check + auto carry-over with extra time ─────────────────────────
+   প্রতি পেজ লোডে চলে (share mode এ নয়)। যেসব টাস্কের তারিখ চলে গেছে কিন্তু
+   শেষ হয়নি, সেগুলোকে "missed" করে দেয়। তবে যদি সব প্র্যাকটিস টিক দেওয়া থাকে বা
+   পরিকল্পিত সময়ের সমান/বেশি সময় ব্যয় হয়ে থাকে, সেটাকে স্বয়ংক্রিয়ভাবে "done"
+   ধরে নেওয়া হয় (ইউজার কমপ্লিট বাটনে ক্লিক করতে ভুলে গেলেও)। বাকি/অসম্পূর্ণ
+   অংশ — বাকি প্র্যাকটিস + বাকি সময় + এক্সট্রা বাফার — নিয়ে আজকের জন্য একটি
+   নতুন "makeup" টাস্ক তৈরি হয়।
+   ───────────────────────────────────────────────────────────────────────── */
+function bbProcessOverdueTasks() {
+  if (_bbShareMode) return { changed: false, newTasks: [] };
+  const tasks = bbLoadTasks();
+  if (!tasks.length) return { changed: false, newTasks: [] };
+  const today = bbGetTodayKey();
+  const settings = bbLoadTaskSettings();
+  const newTasks = [];
+  let changed = false;
+
+  tasks.forEach(t => {
+    if (t.status !== 'pending' || t.date >= today || t.carriedTo) return;
+
+    const allPracticesDone = t.practices && t.practices.length > 0 && t.practices.every(p => p.done);
+    const timeMet = t.plannedMins > 0 && (t.doneMins || 0) >= t.plannedMins;
+
+    if (allPracticesDone || timeMet) {
+      // লক্ষ্য পূরণ হয়ে গিয়েছিল — শুধু বাটনে ক্লিক করা বাকি ছিল
+      t.status = 'done';
+      t.completedAt = t.completedAt || new Date().toISOString();
+      changed = true;
+      return;
+    }
+
+    // মিস হয়ে গেছে → "due" করো এবং আজকের জন্য এক্সট্রা সময় সহ নতুন টাস্ক বানাও
+    t.status = 'missed';
+    t.missedAt = new Date().toISOString();
+    changed = true;
+
+    const remaining = Math.max(0, (t.plannedMins || 0) - (t.doneMins || 0));
+    const extra = Math.max(settings.extraMinMins || 15, Math.round(remaining * ((settings.extraPercent || 30) / 100)));
+    const newPlanned = remaining > 0 ? remaining + extra : extra;
+
+    const newTask = {
+      id: bbGenId('t'),
+      date: today,
+      topic: t.topic,
+      phaseId: t.phaseId || null,
+      practices: (t.practices || []).filter(p => !p.done).map(p => ({ text: p.text, done: false })),
+      plannedMins: newPlanned,
+      doneMins: 0,
+      priority: t.priority === 'low' ? 'medium' : (t.priority || 'medium'), // মিসড টাস্কের প্রায়োরিটি একটু বাড়ানো হলো
+      status: 'pending',
+      reminderTime: t.reminderTime || '',
+      note: '',
+      createdAt: new Date().toISOString(),
+      completedAt: null,
+      carriedFrom: t.id,
+      carriedTo: null,
+      extraMins: extra
+    };
+    t.carriedTo = newTask.id;
+    newTasks.push(newTask);
+  });
+
+  if (newTasks.length) bbSaveTasks(tasks.concat(newTasks));
+  else if (changed) bbSaveTasks(tasks);
+
+  return { changed, newTasks };
+}
+
+/* ── Stats: আজকের সারাংশ, সাপ্তাহিক চার্ট, স্ট্রিক ──────────────────────────── */
+function bbGetTaskStats() {
+  const today = bbGetTodayKey();
+  const todays = bbGetTasksForDate(today);
+  const plannedToday = todays.reduce((s, t) => s + (t.plannedMins || 0), 0);
+  const doneToday = todays.reduce((s, t) => s + (t.doneMins || 0), 0);
+  const doneCount = todays.filter(t => t.status === 'done').length;
+  const all = bbLoadTasks();
+  const missedCount = all.filter(t => t.status === 'missed').length;
+  const completedCount = all.filter(t => t.status === 'done').length;
+  return {
+    todayCount: todays.length,
+    plannedToday, doneToday, doneCount,
+    missedCount, completedCount,
+    totalTasks: all.length,
+    streak: bbGetTaskStreak()
+  };
+}
+function bbGetTaskStreak() {
+  const tasks = bbLoadTasks();
+  if (!tasks.length) return 0;
+  const byDate = {};
+  tasks.forEach(t => { (byDate[t.date] = byDate[t.date] || []).push(t); });
+  let streak = 0;
+  for (let i = 1; i <= 365; i++) {
+    const day = bbDateKeyOffset(-i);
+    const dayTasks = byDate[day];
+    if (!dayTasks || !dayTasks.length) {
+      if (streak > 0) break;   // ফাঁকা দিন স্ট্রিক ভাঙে না — শুরু না হলে স্কিপ করে আগের দিন দেখো
+      continue;
+    }
+    const allDone = dayTasks.every(t => t.status === 'done');
+    const anyMissed = dayTasks.some(t => t.status === 'missed');
+    if (allDone && !anyMissed) streak++; else break;
+  }
+  return streak;
+}
+function bbGetWeeklyTaskStats(days) {
+  days = days || 7;
+  const tasks = bbLoadTasks();
+  const out = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const day = bbDateKeyOffset(-i);
+    const dayTasks = tasks.filter(t => t.date === day);
+    out.push({
+      day,
+      planned: dayTasks.reduce((s, t) => s + (t.plannedMins || 0), 0),
+      done: dayTasks.reduce((s, t) => s + (t.doneMins || 0), 0),
+      count: dayTasks.length,
+      missed: dayTasks.filter(t => t.status === 'missed').length
+    });
+  }
+  return out;
+}
+
 function bbIsChecked(state, id) { return !!state[id]; }
 
 function bbSetChecked(state, id, val) {
@@ -921,6 +1187,10 @@ function bbResetData(opts) {
     _localDel(BB_KEY_TIMELOG);
     _localDel(BB_KEY_SESSIONS);
   }
+  if (opts.tasks) {
+    _bbTasks = [];
+    _localDel(BB_KEY_TASKS);
+  }
   bbScheduleSync();
 }
 
@@ -954,13 +1224,15 @@ function bbConfirmReset() {
   const elNotes    = document.getElementById('resetOptNotes');
   const elTime     = document.getElementById('resetOptTime');
   const elNotion   = document.getElementById('resetOptNotion');
+  const elTasks    = document.getElementById('resetOptTasks');
   const opts = {
     progress: !!(elProgress && elProgress.checked),
     notes:    !!(elNotes && elNotes.checked),
     time:     !!(elTime && elTime.checked),
-    notion:   !!(elNotion && elNotion.checked)
+    notion:   !!(elNotion && elNotion.checked),
+    tasks:    !!(elTasks && elTasks.checked)
   };
-  if (!opts.progress && !opts.notes && !opts.time && !opts.notion) {
+  if (!opts.progress && !opts.notes && !opts.time && !opts.notion && !opts.tasks) {
     alert('⚠️ অন্তত একটি অপশন সিলেক্ট করো।');
     return;
   }
@@ -969,6 +1241,7 @@ function bbConfirmReset() {
   if (opts.notes)    labels.push('পার্সোনাল নোট');
   if (opts.time)     labels.push('সময় ট্র্যাকিং ও সেশন লগ');
   if (opts.notion)   labels.push('Notion লিংক');
+  if (opts.tasks)    labels.push('ডেইলি টাস্ক প্ল্যান (সব টাস্ক ও Due history)');
   const sure = confirm(
     'তুমি কি নিশ্চিত? নিচের ডেটা মুছে যাবে (সব ডিভাইসে, GitHub Gist সহ):\n\n• ' +
     labels.join('\n• ') +
@@ -1012,11 +1285,16 @@ async function _pollGist() {
       _bbNotion   = data.notion   || {};
       _bbTimelog  = data.timelog  || {};
       _bbSessions = data.sessions || [];
+      _bbTasks    = data.tasks    || [];
+      _bbTaskSettings = Object.assign(_bbDefaultTaskSettings(), data.taskSettings || {});
       _localSet(BB_KEY_PROGRESS, _bbState);
       _localSet(BB_KEY_NOTES,    _bbNotes);
       _localSet(BB_KEY_NOTION,   _bbNotion);
       _localSet(BB_KEY_TIMELOG,  _bbTimelog);
       _localSet(BB_KEY_SESSIONS, _bbSessions);
+      _localSet(BB_KEY_TASKS,    _bbTasks);
+      _localSet(BB_KEY_TASK_SET, _bbTaskSettings);
+      bbProcessOverdueTasks();
       _bbSetSyncUI('synced');
       window.dispatchEvent(new CustomEvent('bb:remoteUpdate'));
     }
@@ -1062,7 +1340,11 @@ async function bbInitPage() {
     if (!data && gistToLoad !== BB_GIST_ID) {
       data = await _preFetchGist(BB_GIST_ID);
     }
-    if (data) { _bbState = data.progress || {}; _bbNotes = data.notes || {}; _bbNotion = data.notion || {}; _bbTimelog = data.timelog || {}; _bbSessions = data.sessions || []; }
+    if (data) {
+      _bbState = data.progress || {}; _bbNotes = data.notes || {}; _bbNotion = data.notion || {};
+      _bbTimelog = data.timelog || {}; _bbSessions = data.sessions || [];
+      _bbTasks = data.tasks || []; _bbTaskSettings = Object.assign(_bbDefaultTaskSettings(), data.taskSettings || {});
+    }
     bbFixNavLinks();
     return { shareMode: true };
   }
@@ -1087,11 +1369,15 @@ async function bbInitPage() {
     _bbNotion   = gistData.notion   || {};
     _bbTimelog  = gistData.timelog  || {};
     _bbSessions = gistData.sessions || [];
+    _bbTasks    = gistData.tasks    || [];
+    _bbTaskSettings = Object.assign(_bbDefaultTaskSettings(), gistData.taskSettings || {});
     _localSet(BB_KEY_PROGRESS, _bbState);
     _localSet(BB_KEY_NOTES,    _bbNotes);
     _localSet(BB_KEY_NOTION,   _bbNotion);
     _localSet(BB_KEY_TIMELOG,  _bbTimelog);
     _localSet(BB_KEY_SESSIONS, _bbSessions);
+    _localSet(BB_KEY_TASKS,    _bbTasks);
+    _localSet(BB_KEY_TASK_SET, _bbTaskSettings);
     _bbSetSyncUI(bbGetToken() ? "synced" : "idle");
   } else if (gistId && bbGetToken()) {
     // Pre-fetch failed (rate limit?) — retry with auth token
@@ -1102,21 +1388,34 @@ async function bbInitPage() {
       _bbNotion   = data.notion    || {};
       _bbTimelog  = data.timelog   || {};
       _bbSessions = data.sessions  || [];
+      _bbTasks    = data.tasks     || [];
+      _bbTaskSettings = Object.assign(_bbDefaultTaskSettings(), data.taskSettings || {});
       _localSet(BB_KEY_PROGRESS, _bbState);
       _localSet(BB_KEY_NOTES,    _bbNotes);
       _localSet(BB_KEY_NOTION,   _bbNotion);
       _localSet(BB_KEY_TIMELOG,  _bbTimelog);
       _localSet(BB_KEY_SESSIONS, _bbSessions);
+      _localSet(BB_KEY_TASKS,    _bbTasks);
+      _localSet(BB_KEY_TASK_SET, _bbTaskSettings);
     } else {
       _bbState = _localGet(BB_KEY_PROGRESS) || {};
       _bbNotes = _localGet(BB_KEY_NOTES)   || {};
+      _bbTasks = _localGet(BB_KEY_TASKS)   || [];
+      _bbTaskSettings = bbLoadTaskSettings();
     }
     _bbSetSyncUI("synced");
   } else {
     _bbState = _localGet(BB_KEY_PROGRESS) || {};
     _bbNotes = _localGet(BB_KEY_NOTES)   || {};
+    _bbTasks = _localGet(BB_KEY_TASKS)   || [];
+    _bbTaskSettings = bbLoadTaskSettings();
     _bbSetSyncUI("idle");
   }
+
+  // 5. Due-date check — মিস হওয়া দিনের টাস্ক "due" করে এক্সট্রা সময় সহ আজকে কপি করো
+  const overdueResult = bbProcessOverdueTasks();
+  if (overdueResult.changed) bbScheduleSync();
+
   return { shareMode: false };
 }
 /* — Password gate UI ─────────────────────────────────────────────────────── */
